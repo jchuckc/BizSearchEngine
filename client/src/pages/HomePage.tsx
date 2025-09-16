@@ -123,8 +123,8 @@ export default function HomePage() {
   
   const displayBusinesses = searchQuery && searchData 
     ? searchData.businesses 
-    : (useRankedResults && rankedBusinessesData?.businesses?.length > 0)
-      ? rankedBusinessesData.businesses
+    : (useRankedResults && rankedBusinessesData?.businesses && rankedBusinessesData.businesses.length > 0)
+      ? rankedBusinessesData.businesses.map(rb => ({ ...rb.business, aiScore: rb.score }))
       : businessesData?.businesses || [];
   
   const isLoading = searchQuery ? searchLoading : (useRankedResults ? rankedLoading : businessesLoading);
