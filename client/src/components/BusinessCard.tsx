@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, DollarSign, Users, Calendar, Star } from "lucide-react";
+import { MapPin, DollarSign, Users, Calendar, Star, ExternalLink } from "lucide-react";
 
 interface BusinessCardProps {
   id: string;
@@ -15,6 +15,8 @@ interface BusinessCardProps {
   ebitda: number;
   employees: number;
   yearEstablished: number;
+  sourceUrl: string;
+  sourceSite: string;
   aiScore?: number;
   onViewDetails: (id: string) => void;
   onContact: (id: string) => void;
@@ -32,6 +34,8 @@ export function BusinessCard({
   ebitda,
   employees,
   yearEstablished,
+  sourceUrl,
+  sourceSite,
   aiScore,
   onViewDetails,
   onContact
@@ -78,6 +82,20 @@ export function BusinessCard({
             <span data-testid={`text-location-${id}`}>{location}</span>
             <Calendar className="h-4 w-4 ml-2" />
             <span data-testid={`text-established-${id}`}>Est. {yearEstablished}</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            <ExternalLink className="h-4 w-4" />
+            <span className="text-muted-foreground">Source:</span>
+            <a 
+              href={sourceUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+              data-testid={`link-source-${id}`}
+            >
+              {sourceSite}
+            </a>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
