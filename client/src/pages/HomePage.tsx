@@ -3,12 +3,13 @@ import { HeroSection } from "@/components/HeroSection";
 import { SearchFilters } from "@/components/SearchFilters";
 import { BusinessList } from "@/components/BusinessList";
 import { StatsOverview } from "@/components/StatsOverview";
-import { OnboardingWizard } from "@/components/OnboardingWizard";
+import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Building2, DollarSign, Star, ArrowRight } from "lucide-react";
 import { useBusinesses, useBusinessSearch, useRankedBusinesses } from "@/hooks/useBusinesses";
 import { useUserPreferences, useCreateUserPreferences } from "@/hooks/useUserPreferences";
+import { useAuth } from "@/contexts/AuthContext";
 import { type InsertUserPreferences } from "@shared/schema";
 
 // TODO: remove mock functionality
@@ -89,6 +90,7 @@ const mockBusinesses = [
 ];
 
 export default function HomePage() {
+  const { isAuthenticated, user } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showBusinesses, setShowBusinesses] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -115,9 +117,17 @@ export default function HomePage() {
   );
   const { data: rankedBusinessesData, isLoading: rankedLoading } = useRankedBusinesses(20);
 
-  // Determine which data to show
-  const displayBusinesses = searchQuery && searchData ? searchData.businesses : businessesData?.businesses || [];
-  const isLoading = searchQuery ? searchLoading : businessesLoading;
+  // Determine which data to show - prioritize ranked businesses for authenticated users with preferences
+  const hasPreferences = isAuthenticated && userPreferencesData?.preferences;
+  const useRankedResults = hasPreferences && !searchQuery && showBusinesses;
+  
+  const displayBusinesses = searchQuery && searchData 
+    ? searchData.businesses 
+    : (useRankedResults && rankedBusinessesData?.businesses?.length > 0)
+      ? rankedBusinessesData.businesses
+      : businessesData?.businesses || [];
+  
+  const isLoading = searchQuery ? searchLoading : (useRankedResults ? rankedLoading : businessesLoading);
 
   // Calculate stats from real data
   const realStats = [
@@ -160,11 +170,11 @@ export default function HomePage() {
   };
 
   const handleGetStarted = () => {
-    // Check if user already has preferences
-    if (userPreferencesData?.preferences) {
-      setShowBusinesses(true);
-    } else {
+    // Always show onboarding for non-authenticated users or users without preferences
+    if (!isAuthenticated || !userPreferencesData?.preferences) {
       setShowOnboarding(true);
+    } else {
+      setShowBusinesses(true);
     }
   };
 
@@ -196,12 +206,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {showOnboarding && (
-        <OnboardingWizard
-          onComplete={handleOnboardingComplete}
-          onSkip={() => setShowOnboarding(false)}
-        />
-      )}
+      <OnboardingFlow
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onComplete={() => {
+          setShowOnboarding(false);
+          setShowBusinesses(true);
+        }}
+      />
 
       {!showBusinesses ? (
         // Landing Page

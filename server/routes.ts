@@ -3,18 +3,114 @@ import { createServer, type Server } from "http";
 import { z } from "zod";
 import { storage } from "./storage";
 import { businessRankingService } from "./services/businessRanking";
+import { AuthUtils } from "./auth";
 import { 
   insertUserPreferencesSchema, 
   insertBusinessSchema, 
   insertSearchHistorySchema,
+  insertUserSchema,
   type Business
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication routes
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUserByEmail = await storage.getUserByEmail(validatedData.email);
+      if (existingUserByEmail) {
+        return res.status(400).json({ error: "Email already registered" });
+      }
+      
+      const existingUserByUsername = await storage.getUserByUsername(validatedData.username);
+      if (existingUserByUsername) {
+        return res.status(400).json({ error: "Username already taken" });
+      }
+      
+      const user = await storage.createUser(validatedData);
+      
+      // Store user ID in session
+      (req as any).session.userId = user.id;
+      
+      // Return user without password
+      const { password, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid data", details: error.errors });
+      }
+      console.error("Error creating user:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password required" });
+      }
+      
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      const isValidPassword = await AuthUtils.comparePassword(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // Store user ID in session
+      (req as any).session.userId = user.id;
+      
+      // Return user without password
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("Error logging in user:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      (req as any).session.destroy();
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error logging out user:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      const userId = (req as any).session?.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      
+      // Return user without password
+      const { password, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
   // User preferences endpoints
   app.get("/api/user/preferences", async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).session?.userId;
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
@@ -29,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/user/preferences", async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).session?.userId;
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
@@ -55,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/user/preferences", async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).session?.userId;
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
@@ -111,7 +207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const businesses = await storage.searchBusinesses(query.trim());
       
       // Log search history if user is authenticated
-      const userId = (req as any).user?.id;
+      const userId = (req as any).session?.userId;
       if (userId) {
         storage.createSearchHistory({
           userId,
@@ -137,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI-powered ranking endpoints (must come before parameterized routes)
   app.get("/api/businesses/ranked", async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).session?.userId;
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
@@ -166,7 +262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Include score if user is authenticated
       let score = null;
-      const userId = (req as any).user?.id;
+      const userId = (req as any).session?.userId;
       if (userId) {
         score = await storage.getBusinessScore(userId, businessId);
       }
@@ -180,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/businesses/:id/rank", async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).session?.userId;
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
@@ -216,7 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/businesses/rank-batch", async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).session?.userId;
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
@@ -247,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Search history endpoints
   app.get("/api/user/search-history", async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).session?.userId;
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }

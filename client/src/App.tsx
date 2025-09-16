@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { AppHeader } from "@/components/AppHeader";
 import HomePage from "@/pages/HomePage";
 import NotFound from "@/pages/not-found";
@@ -41,18 +42,20 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="light" storageKey="bizsearch-theme">
-          <div className="min-h-screen bg-background text-foreground">
-            <AppHeader
-              onSearch={handleSearch}
-              onShowProfile={handleShowProfile}
-              onShowSettings={handleShowSettings}
-              onToggleMobileMenu={() => setShowMobileMenu(!showMobileMenu)}
-            />
-            <main className="flex-1">
-              <Router />
-            </main>
-          </div>
-          <Toaster />
+          <AuthProvider>
+            <div className="min-h-screen bg-background text-foreground">
+              <AppHeader
+                onSearch={handleSearch}
+                onShowProfile={handleShowProfile}
+                onShowSettings={handleShowSettings}
+                onToggleMobileMenu={() => setShowMobileMenu(!showMobileMenu)}
+              />
+              <main className="flex-1">
+                <Router />
+              </main>
+            </div>
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
