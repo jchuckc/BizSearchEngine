@@ -1,0 +1,263 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { X, Filter, RotateCcw } from "lucide-react";
+import { useState } from "react";
+
+interface FilterState {
+  priceRange: [number, number];
+  revenueRange: [number, number];
+  location: string;
+  industry: string[];
+  riskTolerance: string;
+  involvement: string;
+  employees: string;
+}
+
+interface SearchFiltersProps {
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
+  onClearFilters: () => void;
+}
+
+const industries = [
+  "Food & Beverage",
+  "Retail",
+  "Technology",
+  "Healthcare",
+  "Manufacturing",
+  "Professional Services",
+  "Real Estate",
+  "Transportation",
+  "Education",
+  "Entertainment"
+];
+
+const riskLevels = [
+  { value: "low", label: "Low Risk" },
+  { value: "medium", label: "Medium Risk" },
+  { value: "high", label: "High Risk" }
+];
+
+const involvementLevels = [
+  { value: "low", label: "Low Touch (Semi-Absentee)" },
+  { value: "medium", label: "Medium Touch (Managerial)" },
+  { value: "high", label: "High Touch (Owner-Operator)" }
+];
+
+const employeeSizes = [
+  { value: "1-5", label: "1-5 employees" },
+  { value: "6-15", label: "6-15 employees" },
+  { value: "16-50", label: "16-50 employees" },
+  { value: "50+", label: "50+ employees" }
+];
+
+export function SearchFilters({ filters, onFiltersChange, onClearFilters }: SearchFiltersProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handlePriceRangeChange = (value: number[]) => {
+    onFiltersChange({ ...filters, priceRange: [value[0], value[1]] });
+  };
+
+  const handleRevenueRangeChange = (value: number[]) => {
+    onFiltersChange({ ...filters, revenueRange: [value[0], value[1]] });
+  };
+
+  const handleLocationChange = (value: string) => {
+    onFiltersChange({ ...filters, location: value });
+  };
+
+  const handleIndustryToggle = (industry: string) => {
+    const newIndustries = filters.industry.includes(industry)
+      ? filters.industry.filter(i => i !== industry)
+      : [...filters.industry, industry];
+    onFiltersChange({ ...filters, industry: newIndustries });
+  };
+
+  const removeIndustry = (industry: string) => {
+    const newIndustries = filters.industry.filter(i => i !== industry);
+    onFiltersChange({ ...filters, industry: newIndustries });
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Search Filters
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              data-testid="button-toggle-filters"
+            >
+              {isExpanded ? "Hide" : "Show"} Filters
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearFilters}
+              data-testid="button-clear-filters"
+            >
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Clear
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      
+      {isExpanded && (
+        <CardContent className="space-y-6">
+          {/* Location */}
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              placeholder="City, State"
+              value={filters.location}
+              onChange={(e) => handleLocationChange(e.target.value)}
+              data-testid="input-location"
+            />
+          </div>
+
+          {/* Price Range */}
+          <div className="space-y-3">
+            <Label>Price Range: {formatCurrency(filters.priceRange[0])} - {formatCurrency(filters.priceRange[1])}</Label>
+            <Slider
+              value={filters.priceRange}
+              onValueChange={handlePriceRangeChange}
+              max={5000000}
+              min={50000}
+              step={25000}
+              className="w-full"
+              data-testid="slider-price-range"
+            />
+          </div>
+
+          {/* Revenue Range */}
+          <div className="space-y-3">
+            <Label>Annual Revenue: {formatCurrency(filters.revenueRange[0])} - {formatCurrency(filters.revenueRange[1])}</Label>
+            <Slider
+              value={filters.revenueRange}
+              onValueChange={handleRevenueRangeChange}
+              max={10000000}
+              min={100000}
+              step={50000}
+              className="w-full"
+              data-testid="slider-revenue-range"
+            />
+          </div>
+
+          {/* Industries */}
+          <div className="space-y-3">
+            <Label>Industries</Label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {filters.industry.map((industry) => (
+                <Badge key={industry} variant="default" className="gap-1" data-testid={`badge-industry-${industry.replace(/\s+/g, '-').toLowerCase()}`}>
+                  {industry}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => removeIndustry(industry)}
+                  />
+                </Badge>
+              ))}
+            </div>
+            <Select onValueChange={handleIndustryToggle} data-testid="select-industry">
+              <SelectTrigger>
+                <SelectValue placeholder="Add industry..." />
+              </SelectTrigger>
+              <SelectContent>
+                {industries
+                  .filter(industry => !filters.industry.includes(industry))
+                  .map((industry) => (
+                    <SelectItem key={industry} value={industry}>
+                      {industry}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Risk Tolerance */}
+          <div className="space-y-2">
+            <Label>Risk Tolerance</Label>
+            <Select
+              value={filters.riskTolerance}
+              onValueChange={(value) => onFiltersChange({ ...filters, riskTolerance: value })}
+              data-testid="select-risk-tolerance"
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select risk level..." />
+              </SelectTrigger>
+              <SelectContent>
+                {riskLevels.map((level) => (
+                  <SelectItem key={level.value} value={level.value}>
+                    {level.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Involvement Level */}
+          <div className="space-y-2">
+            <Label>Desired Involvement</Label>
+            <Select
+              value={filters.involvement}
+              onValueChange={(value) => onFiltersChange({ ...filters, involvement: value })}
+              data-testid="select-involvement"
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select involvement level..." />
+              </SelectTrigger>
+              <SelectContent>
+                {involvementLevels.map((level) => (
+                  <SelectItem key={level.value} value={level.value}>
+                    {level.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Employee Count */}
+          <div className="space-y-2">
+            <Label>Business Size (Employees)</Label>
+            <Select
+              value={filters.employees}
+              onValueChange={(value) => onFiltersChange({ ...filters, employees: value })}
+              data-testid="select-employees"
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select business size..." />
+              </SelectTrigger>
+              <SelectContent>
+                {employeeSizes.map((size) => (
+                  <SelectItem key={size.value} value={size.value}>
+                    {size.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  );
+}
