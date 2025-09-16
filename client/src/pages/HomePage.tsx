@@ -107,15 +107,15 @@ export default function HomePage() {
   // API hooks
   const { data: userPreferencesData } = useUserPreferences();
   const createPreferencesMutation = useCreateUserPreferences();
-  const { data: businessesData, isLoading: businessesLoading } = useBusinesses({
+  const { data: businessesData, isLoading: businessesLoading, refetch: refetchBusinesses } = useBusinesses({
     limit: showBusinesses ? 20 : 6, // Show 6 featured on home, 20 in search results
     ...filters
   });
-  const { data: searchData, isLoading: searchLoading } = useBusinessSearch(
+  const { data: searchData, isLoading: searchLoading, refetch: refetchSearch } = useBusinessSearch(
     searchQuery, 
     !!searchQuery && searchQuery.length >= 2
   );
-  const { data: rankedBusinessesData, isLoading: rankedLoading } = useRankedBusinesses(20);
+  const { data: rankedBusinessesData, isLoading: rankedLoading, refetch: refetchRanked } = useRankedBusinesses(20);
 
   // Determine which data to show - prioritize ranked businesses for authenticated users with preferences
   const hasPreferences = isAuthenticated && userPreferencesData?.preferences;
@@ -128,6 +128,20 @@ export default function HomePage() {
       : businessesData?.businesses || [];
   
   const isLoading = searchQuery ? searchLoading : (useRankedResults ? rankedLoading : businessesLoading);
+
+  // Refresh handler - refetches the appropriate data based on what's currently displayed
+  const handleRefresh = () => {
+    if (searchQuery && searchQuery.length >= 2) {
+      // Refresh search results
+      refetchSearch();
+    } else if (useRankedResults) {
+      // Refresh ranked businesses
+      refetchRanked();
+    } else {
+      // Refresh regular businesses
+      refetchBusinesses();
+    }
+  };
 
   // Calculate stats from real data
   const realStats = [
@@ -398,6 +412,7 @@ export default function HomePage() {
                 onContact={(id) => console.log(`Contact seller: ${id}`)}
                 hasMore={displayBusinesses.length >= 20}
                 onLoadMore={() => console.log("Load more")}
+                onRefresh={handleRefresh}
               />
             </div>
           </div>

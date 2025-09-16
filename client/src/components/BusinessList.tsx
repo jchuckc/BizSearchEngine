@@ -1,7 +1,7 @@
 import { BusinessCard } from "./BusinessCard";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUpDown, Grid, List } from "lucide-react";
+import { ArrowUpDown, Grid, List, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { type Business } from "@shared/schema";
 
@@ -12,6 +12,7 @@ interface BusinessListProps {
   onContact: (id: string) => void;
   onLoadMore?: () => void;
   hasMore?: boolean;
+  onRefresh?: () => void;
 }
 
 type SortOption = "askingPrice" | "annualRevenue" | "cashFlow" | "yearEstablished";
@@ -23,7 +24,8 @@ export function BusinessList({
   onViewDetails, 
   onContact, 
   onLoadMore,
-  hasMore = false 
+  hasMore = false,
+  onRefresh 
 }: BusinessListProps) {
   const [sortBy, setSortBy] = useState<SortOption>("askingPrice");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -86,6 +88,20 @@ export function BusinessList({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Refresh Button */}
+          {onRefresh && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRefresh}
+              data-testid="button-refresh"
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+          )}
+          
           {/* View Mode Toggle */}
           <div className="flex bg-muted rounded-lg p-1">
             <Button
