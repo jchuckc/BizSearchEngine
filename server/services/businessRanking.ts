@@ -128,16 +128,30 @@ export class BusinessRankingService {
     userId: string, 
     limit: number = 20
   ): Promise<Array<BusinessScore & { business: Business }>> {
-    // First, get cached scores
-    const cachedScores = await storage.getBusinessScores(userId, limit);
+    // Get user preferences to apply location filtering
+    const preferences = await storage.getUserPreferences(userId);
+    const locationFilter = preferences?.location;
+
+    // First, get cached scores and filter by location if preference exists
+    const cachedScores = await storage.getBusinessScores(userId, limit * 2); // Get more to account for filtering
+    const filteredCachedScores = locationFilter 
+      ? cachedScores.filter(score => 
+          score.business.location.toLowerCase().includes(locationFilter.toLowerCase())
+        )
+      : cachedScores;
     
-    if (cachedScores.length >= limit) {
-      return cachedScores;
+    if (filteredCachedScores.length >= limit) {
+      return filteredCachedScores.slice(0, limit);
     }
 
-    // If we need more scores, get unscored businesses
-    const allBusinesses = await storage.getBusinesses({ limit: 100 });
-    const scoredBusinessIds = new Set(cachedScores.map(s => s.businessId));
+    // If we need more scores, get unscored businesses with location filter
+    const businessFilters: any = { limit: 100 };
+    if (locationFilter) {
+      businessFilters.location = locationFilter;
+    }
+    
+    const allBusinesses = await storage.getBusinesses(businessFilters);
+    const scoredBusinessIds = new Set(filteredCachedScores.map(s => s.businessId));
     const unscored = allBusinesses.filter(b => !scoredBusinessIds.has(b.id));
 
     if (unscored.length > 0) {
@@ -145,13 +159,13 @@ export class BusinessRankingService {
       const newRankings = await this.rankMultipleBusinesses(unscored.slice(0, 20), userId);
       
       // Combine and sort
-      const allRankings = [...cachedScores, ...newRankings];
+      const allRankings = [...filteredCachedScores, ...newRankings];
       return allRankings
         .sort((a, b) => b.score - a.score)
         .slice(0, limit);
     }
 
-    return cachedScores;
+    return filteredCachedScores.slice(0, limit);
   }
 
   /**
