@@ -1,9 +1,11 @@
 import { BusinessCard } from "./BusinessCard";
+import { BusinessDetailsModal } from "./BusinessDetailsModal";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowUpDown, Grid, List, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { type Business } from "@shared/schema";
+import { useBusiness } from "@/hooks/useBusinesses";
 
 interface BusinessListProps {
   businesses: Business[];
@@ -30,6 +32,23 @@ export function BusinessList({
   const [sortBy, setSortBy] = useState<SortOption>("askingPrice");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Fetch detailed business data when modal is opened
+  const { data: businessDetails, isLoading: businessDetailsLoading } = useBusiness(selectedBusinessId || "");
+
+  const handleViewDetails = (businessId: string) => {
+    setSelectedBusinessId(businessId);
+    setIsModalOpen(true);
+    // Also call the original onViewDetails if needed
+    onViewDetails(businessId);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedBusinessId(null);
+  };
 
   const sortedBusinesses = [...businesses].sort((a, b) => {
     const aValue = a[sortBy];
@@ -156,7 +175,7 @@ export function BusinessList({
           <BusinessCard
             key={business.id}
             {...business}
-            onViewDetails={onViewDetails}
+            onViewDetails={handleViewDetails}
             onContact={onContact}
           />
         ))}
@@ -173,6 +192,18 @@ export function BusinessList({
             Load More Businesses
           </Button>
         </div>
+      )}
+
+      {/* Business Details Modal */}
+      {selectedBusinessId && (
+        <BusinessDetailsModal
+          business={businessDetails?.business}
+          score={businessDetails?.score}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onContact={onContact}
+          isLoading={businessDetailsLoading}
+        />
       )}
     </div>
   );

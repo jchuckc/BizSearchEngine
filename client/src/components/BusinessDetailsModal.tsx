@@ -20,11 +20,12 @@ import {
 import { Business, BusinessScore } from "@shared/schema";
 
 interface BusinessDetailsModalProps {
-  business: Business;
+  business?: Business;
   score?: BusinessScore;
   isOpen: boolean;
   onClose: () => void;
   onContact: (id: string) => void;
+  isLoading?: boolean;
 }
 
 export function BusinessDetailsModal({ 
@@ -32,7 +33,8 @@ export function BusinessDetailsModal({
   score, 
   isOpen, 
   onClose, 
-  onContact 
+  onContact,
+  isLoading = false 
 }: BusinessDetailsModalProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -49,27 +51,30 @@ export function BusinessDetailsModal({
     return "text-red-600 dark:text-red-400";
   };
 
-  const getScoreIcon = (score: number) => {
-    if (score >= 80) return "🟢";
-    if (score >= 60) return "🟡";
-    return "🔴";
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid={`modal-business-details-${business.id}`}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid={`modal-business-details-${business?.id || 'loading'}`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <Building2 className="h-6 w-6" />
-            {business.name}
-            <Badge variant="secondary">{business.industry}</Badge>
+            {isLoading ? "Loading business details..." : business?.name || "Business Details"}
+            {business?.industry && <Badge variant="secondary">{business.industry}</Badge>}
           </DialogTitle>
           <DialogDescription>
-            Complete business details and AI compatibility analysis
+            {isLoading ? "Please wait while we fetch the business information" : "Complete business details and AI compatibility analysis"}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        {isLoading ? (
+          <div className="space-y-6 py-8">
+            <div className="text-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading business details...</p>
+            </div>
+          </div>
+        ) : business ? (
+          <div className="space-y-6">
           {/* AI Score Section */}
           {score && (
             <Card className="border-primary/20">
@@ -193,19 +198,21 @@ export function BusinessDetailsModal({
                     {business.employees}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4" />
-                  <span className="text-sm">Source:</span>
-                  <a 
-                    href={business.sourceUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline font-medium"
-                    data-testid={`link-modal-source-${business.id}`}
-                  >
-                    {business.sourceSite}
-                  </a>
-                </div>
+                {business.sourceUrl && business.sourceSite && (
+                  <div className="flex items-center gap-2">
+                    <ExternalLink className="h-4 w-4" />
+                    <span className="text-sm">Source:</span>
+                    <a 
+                      href={business.sourceUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline font-medium"
+                      data-testid={`link-modal-source-${business.id}`}
+                    >
+                      {business.sourceSite}
+                    </a>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -263,16 +270,25 @@ export function BusinessDetailsModal({
             >
               Contact Seller
             </Button>
-            <Button 
-              variant="outline"
-              onClick={() => window.open(business.sourceUrl, '_blank')}
-              data-testid={`button-modal-source-${business.id}`}
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              View Original Listing
-            </Button>
+            {business.sourceUrl && (
+              <Button 
+                variant="outline"
+                onClick={() => window.open(business.sourceUrl, '_blank')}
+                data-testid={`button-modal-source-${business.id}`}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                View Original Listing
+              </Button>
+            )}
           </div>
         </div>
+        ) : (
+          <div className="space-y-6 py-8">
+            <div className="text-center">
+              <p className="text-muted-foreground">Business details not available</p>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -84,19 +84,21 @@ export function BusinessCard({
             <span data-testid={`text-established-${id}`}>Est. {yearEstablished}</span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm">
-            <ExternalLink className="h-4 w-4" />
-            <span className="text-muted-foreground">Source:</span>
-            <a 
-              href={sourceUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-              data-testid={`link-source-${id}`}
-            >
-              {sourceSite}
-            </a>
-          </div>
+          {sourceUrl && sourceSite && (
+            <div className="flex items-center gap-2 text-sm">
+              <ExternalLink className="h-4 w-4" />
+              <span className="text-muted-foreground">Source:</span>
+              <a 
+                href={sourceUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+                data-testid={`link-source-${id}`}
+              >
+                {sourceSite}
+              </a>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
