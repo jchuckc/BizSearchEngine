@@ -122,6 +122,102 @@ export class BusinessRankingService {
   }
 
   /**
+   * Smart location matching that handles state abbreviations
+   */
+  private matchesLocation(businessLocation: string, preferredLocation: string): boolean {
+    const business = businessLocation.toLowerCase();
+    const preferred = preferredLocation.toLowerCase();
+    
+    // Direct match or substring match
+    if (business.includes(preferred) || preferred.includes(business)) {
+      return true;
+    }
+    
+    // Handle state abbreviations
+    const stateAbbreviations: Record<string, string> = {
+      'tx': 'texas',
+      'ca': 'california', 
+      'ny': 'new york',
+      'fl': 'florida',
+      'il': 'illinois',
+      'pa': 'pennsylvania',
+      'oh': 'ohio',
+      'ga': 'georgia',
+      'nc': 'north carolina',
+      'mi': 'michigan',
+      'nj': 'new jersey',
+      'va': 'virginia',
+      'wa': 'washington',
+      'az': 'arizona',
+      'ma': 'massachusetts',
+      'tn': 'tennessee',
+      'in': 'indiana',
+      'mo': 'missouri',
+      'md': 'maryland',
+      'wi': 'wisconsin',
+      'co': 'colorado',
+      'mn': 'minnesota',
+      'sc': 'south carolina',
+      'al': 'alabama',
+      'la': 'louisiana',
+      'ky': 'kentucky',
+      'or': 'oregon',
+      'ok': 'oklahoma',
+      'ct': 'connecticut',
+      'ut': 'utah',
+      'ia': 'iowa',
+      'nv': 'nevada',
+      'ar': 'arkansas',
+      'ms': 'mississippi',
+      'ks': 'kansas',
+      'nm': 'new mexico',
+      'ne': 'nebraska',
+      'id': 'idaho',
+      'wv': 'west virginia',
+      'hi': 'hawaii',
+      'nh': 'new hampshire',
+      'me': 'maine',
+      'mt': 'montana',
+      'ri': 'rhode island',
+      'de': 'delaware',
+      'sd': 'south dakota',
+      'nd': 'north dakota',
+      'ak': 'alaska',
+      'vt': 'vermont',
+      'wy': 'wyoming'
+    };
+    
+    // Extract city from both locations
+    const businessParts = business.split(',').map(p => p.trim());
+    const preferredParts = preferred.split(',').map(p => p.trim());
+    
+    if (businessParts.length >= 2 && preferredParts.length >= 2) {
+      const businessCity = businessParts[0];
+      const businessState = businessParts[1];
+      const preferredCity = preferredParts[0];
+      const preferredState = preferredParts[1];
+      
+      // Check if cities match
+      if (businessCity === preferredCity) {
+        // Check if states match (handle abbreviations)
+        if (businessState === preferredState) {
+          return true;
+        }
+        
+        // Check state abbreviation mappings
+        const businessStateFull = stateAbbreviations[businessState] || businessState;
+        const preferredStateFull = stateAbbreviations[preferredState] || preferredState;
+        
+        return businessStateFull === preferredStateFull || 
+               businessState === preferredStateFull || 
+               businessStateFull === preferredState;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
    * Get top ranked businesses for a user with caching
    */
   async getTopRankedBusinesses(
@@ -135,9 +231,7 @@ export class BusinessRankingService {
     // First, get cached scores and filter by location if preference exists
     const cachedScores = await storage.getBusinessScores(userId, limit * 2); // Get more to account for filtering
     const filteredCachedScores = locationFilter 
-      ? cachedScores.filter(score => 
-          score.business.location.toLowerCase().includes(locationFilter.toLowerCase())
-        )
+      ? cachedScores.filter(score => this.matchesLocation(score.business.location, locationFilter))
       : cachedScores;
     
     if (filteredCachedScores.length >= limit) {

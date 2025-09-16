@@ -158,7 +158,9 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (filters?.location) {
-      conditions.push(ilike(businesses.location, `%${filters.location}%`));
+      // Extract city name for broader matching (handle "Houston, TX" vs "Houston, Texas")
+      const cityName = filters.location.split(',')[0].trim();
+      conditions.push(ilike(businesses.location, `%${cityName}%`));
     }
 
     if (filters?.industries && filters.industries.length > 0) {
