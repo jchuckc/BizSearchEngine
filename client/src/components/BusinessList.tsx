@@ -3,21 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowUpDown, Grid, List } from "lucide-react";
 import { useState } from "react";
-
-interface Business {
-  id: string;
-  name: string;
-  description: string;
-  location: string;
-  industry: string;
-  askingPrice: number;
-  annualRevenue: number;
-  cashFlow: number;
-  ebitda: number;
-  employees: number;
-  yearEstablished: number;
-  aiScore: number;
-}
+import { type Business } from "@shared/schema";
 
 interface BusinessListProps {
   businesses: Business[];
@@ -28,7 +14,7 @@ interface BusinessListProps {
   hasMore?: boolean;
 }
 
-type SortOption = "aiScore" | "askingPrice" | "annualRevenue" | "cashFlow" | "yearEstablished";
+type SortOption = "askingPrice" | "annualRevenue" | "cashFlow" | "yearEstablished";
 type ViewMode = "grid" | "list";
 
 export function BusinessList({ 
@@ -39,7 +25,7 @@ export function BusinessList({
   onLoadMore,
   hasMore = false 
 }: BusinessListProps) {
-  const [sortBy, setSortBy] = useState<SortOption>("aiScore");
+  const [sortBy, setSortBy] = useState<SortOption>("askingPrice");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
@@ -126,7 +112,6 @@ export function BusinessList({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="aiScore">AI Score</SelectItem>
               <SelectItem value="askingPrice">Asking Price</SelectItem>
               <SelectItem value="annualRevenue">Annual Revenue</SelectItem>
               <SelectItem value="cashFlow">Cash Flow</SelectItem>

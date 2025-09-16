@@ -15,7 +15,7 @@ interface BusinessCardProps {
   ebitda: number;
   employees: number;
   yearEstablished: number;
-  aiScore: number;
+  aiScore?: number;
   onViewDetails: (id: string) => void;
   onContact: (id: string) => void;
 }
@@ -58,12 +58,14 @@ export function BusinessCard({
           <h3 className="text-lg font-semibold" data-testid={`text-business-name-${id}`}>{name}</h3>
           <Badge variant="secondary" data-testid={`badge-industry-${id}`}>{industry}</Badge>
         </div>
-        <div className="flex items-center gap-1">
-          <Star className="h-4 w-4 fill-primary text-primary" />
-          <span className={`font-bold ${getScoreColor(aiScore)}`} data-testid={`text-ai-score-${id}`}>
-            {aiScore}
-          </span>
-        </div>
+        {aiScore !== undefined && (
+          <div className="flex items-center gap-1">
+            <Star className="h-4 w-4 fill-primary text-primary" />
+            <span className={`font-bold ${getScoreColor(aiScore)}`} data-testid={`text-ai-score-${id}`}>
+              {aiScore}
+            </span>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

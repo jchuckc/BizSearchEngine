@@ -134,6 +134,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI-powered ranking endpoints (must come before parameterized routes)
+  app.get("/api/businesses/ranked", async (req, res) => {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      const rankedBusinesses = await businessRankingService.getTopRankedBusinesses(userId, limit);
+      
+      res.json({ 
+        businesses: rankedBusinesses,
+        count: rankedBusinesses.length 
+      });
+    } catch (error) {
+      console.error("Error fetching ranked businesses:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/businesses/:id", async (req, res) => {
     try {
       const businessId = req.params.id;
@@ -153,27 +174,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ business, score });
     } catch (error) {
       console.error("Error fetching business:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  // AI-powered ranking endpoints
-  app.get("/api/businesses/ranked", async (req, res) => {
-    try {
-      const userId = (req as any).user?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
-      const rankedBusinesses = await businessRankingService.getTopRankedBusinesses(userId, limit);
-      
-      res.json({ 
-        businesses: rankedBusinesses,
-        count: rankedBusinesses.length 
-      });
-    } catch (error) {
-      console.error("Error fetching ranked businesses:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
