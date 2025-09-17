@@ -100,31 +100,31 @@ export function BusinessCard({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Asking Price</span>
-                <span className="font-semibold text-primary" data-testid={`text-asking-price-${id}`}>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground w-20">Asking Price</span>
+                <span className="font-semibold text-primary text-right" data-testid={`text-asking-price-${id}`}>
                   {formatCurrency(askingPrice)}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Annual Revenue</span>
-                <span className="font-medium" data-testid={`text-revenue-${id}`}>
-                  {formatCurrency(annualRevenue)}
-                </span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Cash Flow</span>
-                <span className="font-medium text-green-600 dark:text-green-400" data-testid={`text-cash-flow-${id}`}>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground w-20">Cash Flow</span>
+                <span className="font-medium text-green-600 dark:text-green-400 text-right" data-testid={`text-cash-flow-${id}`}>
                   {formatCurrency(cashFlow)}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">EBITDA</span>
-                <span className="font-medium" data-testid={`text-ebitda-${id}`}>
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground w-20">Revenue</span>
+                <span className="font-medium text-right" data-testid={`text-revenue-${id}`}>
+                  {formatCurrency(annualRevenue)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground w-20">EBITDA</span>
+                <span className="font-medium text-right" data-testid={`text-ebitda-${id}`}>
                   {formatCurrency(ebitda)}
                 </span>
               </div>
