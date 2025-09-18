@@ -17,6 +17,7 @@ export const userPreferences = pgTable("user_preferences", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   capitalRange: json("capital_range").$type<[number, number]>().notNull(),
+  revenueRange: json("revenue_range").$type<[number, number]>(),
   targetIncome: text("target_income").notNull(),
   riskTolerance: text("risk_tolerance").notNull(),
   involvement: text("involvement").notNull(),

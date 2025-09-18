@@ -301,6 +301,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Starting web search for business listings with filters...", searchPreferences);
       const searchResult = await webBusinessScraperService.searchBusinessListings(searchPreferences);
       
+      // Debug: Log the cities returned by the search
+      if (searchResult.businesses && searchResult.businesses.length > 0) {
+        const cityCounts = searchResult.businesses.slice(0, 15).reduce((acc: Record<string, number>, business) => {
+          const city = business.location.split(',')[0];
+          acc[city] = (acc[city] || 0) + 1;
+          return acc;
+        }, {});
+        console.log("API Response - First 15 business cities:", cityCounts);
+      }
+      
       res.json({
         businesses: searchResult.businesses,
         totalFound: searchResult.totalFound,

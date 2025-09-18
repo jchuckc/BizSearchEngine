@@ -39,7 +39,10 @@ export function useWebBusinessSearch() {
       const params = new URLSearchParams();
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
-          if (value && value !== '' && value !== 'any' && (Array.isArray(value) ? value.length > 0 : true)) {
+          // Special handling for location to allow "Any Location" to be sent to server
+          if (key === 'location' && (value === '' || value === 'Any Location')) {
+            params.append('location', 'Any Location');
+          } else if (value && value !== '' && value !== 'any' && (Array.isArray(value) ? value.length > 0 : true)) {
             // Map 'industry' to 'industries' for server compatibility
             const serverKey = key === 'industry' ? 'industries' : key;
             

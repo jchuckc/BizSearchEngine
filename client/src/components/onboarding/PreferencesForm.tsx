@@ -53,6 +53,10 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
       min: "",
       max: ""
     },
+    revenueRange: {
+      min: "",
+      max: ""
+    },
     riskTolerance: "",
     targetIncome: "",
     involvement: "",
@@ -84,6 +88,10 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
           capitalRange: [
             parseInt(preferences.capitalRange.min) || 50000,
             parseInt(preferences.capitalRange.max) || 1000000
+          ],
+          revenueRange: [
+            parseInt(preferences.revenueRange.min) || 100000,
+            parseInt(preferences.revenueRange.max) || 10000000
           ],
           riskTolerance: preferences.riskTolerance,
           targetIncome: preferences.targetIncome,
@@ -162,6 +170,41 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
                       capitalRange: { ...prev.capitalRange, max: e.target.value }
                     }))}
                     data-testid="input-budget-max"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Revenue Range */}
+            <div className="space-y-4">
+              <Label className="text-base font-medium">Target Annual Revenue Range</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="revenue-min">Minimum ($)</Label>
+                  <Input
+                    id="revenue-min"
+                    type="number"
+                    placeholder="e.g., 500000"
+                    value={preferences.revenueRange.min}
+                    onChange={(e) => setPreferences(prev => ({
+                      ...prev,
+                      revenueRange: { ...prev.revenueRange, min: e.target.value }
+                    }))}
+                    data-testid="input-revenue-min"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="revenue-max">Maximum ($)</Label>
+                  <Input
+                    id="revenue-max"
+                    type="number"
+                    placeholder="e.g., 5000000"
+                    value={preferences.revenueRange.max}
+                    onChange={(e) => setPreferences(prev => ({
+                      ...prev,
+                      revenueRange: { ...prev.revenueRange, max: e.target.value }
+                    }))}
+                    data-testid="input-revenue-max"
                   />
                 </div>
               </div>

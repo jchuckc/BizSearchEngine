@@ -52,6 +52,7 @@ export default function HomePage() {
   const [showBusinesses, setShowBusinesses] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showWebResults, setShowWebResults] = useState(false);
+  // Initialize filters from user preferences or use defaults
   const [filters, setFilters] = useState({
     priceRange: [50000, 5000000] as [number, number],
     revenueRange: [100000, 10000000] as [number, number],
@@ -73,7 +74,7 @@ export default function HomePage() {
       const prefs = userPreferencesData.preferences;
       setFilters({
         priceRange: prefs.capitalRange || [50000, 5000000],
-        revenueRange: [100000, 10000000], // Keep default for revenue since it's not in preferences
+        revenueRange: prefs.revenueRange || [100000, 10000000],
         location: prefs.location === "any" ? "" : prefs.location || "",
         industry: prefs.industries || [],
         riskTolerance: prefs.riskTolerance || "any",

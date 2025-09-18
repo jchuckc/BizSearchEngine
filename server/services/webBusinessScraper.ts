@@ -71,6 +71,8 @@ export class WebBusinessScraperService {
   }
 
   private buildSearchQueries(preferences?: UserPreferences): string[] {
+    console.log("Building search queries with preferences:", JSON.stringify(preferences, null, 2));
+    
     let baseQueries = [
       "businesses for sale BizBuySell",
       "small businesses for sale BizQuest", 
@@ -81,12 +83,18 @@ export class WebBusinessScraperService {
     ];
 
     if (!preferences) {
+      console.log("No preferences provided, returning base queries:", baseQueries);
       return baseQueries;
     }
 
-    // If location is specified, add location to ALL base queries
-    if (preferences.location) {
+    // If location is specified and not "Any Location", add location to ALL base queries
+    if (preferences.location && preferences.location !== "Any Location") {
+      console.log("Adding location to all base queries:", preferences.location);
       baseQueries = baseQueries.map(query => `${query} ${preferences.location}`);
+    } else if (preferences.location === "Any Location") {
+      console.log("Location is 'Any Location', keeping queries generic (no location added)");
+    } else {
+      console.log("No specific location provided, keeping queries generic");
     }
 
     // Enhance queries with user preferences
@@ -98,8 +106,8 @@ export class WebBusinessScraperService {
         const industryQuery1 = `${industry} businesses for sale BizBuySell BizQuest`;
         const industryQuery2 = `${industry} franchise opportunities FranchiseGator`;
         
-        // Add location to industry queries if specified
-        if (preferences.location) {
+        // Add location to industry queries if specified and not "Any Location"
+        if (preferences.location && preferences.location !== "Any Location") {
           enhancedQueries.push(`${industryQuery1} ${preferences.location}`);
           enhancedQueries.push(`${industryQuery2} ${preferences.location}`);
         } else {
@@ -114,14 +122,16 @@ export class WebBusinessScraperService {
       const [minPrice, maxPrice] = preferences.capitalRange;
       if (minPrice > 0 && maxPrice > minPrice) {
         let priceQuery = `businesses for sale $${minPrice} to $${maxPrice} BizBuySell BizQuest`;
-        if (preferences.location) {
+        if (preferences.location && preferences.location !== "Any Location") {
           priceQuery += ` ${preferences.location}`;
         }
         enhancedQueries.push(priceQuery);
       }
     }
 
-    return [...baseQueries, ...enhancedQueries].slice(0, 10); // Limit to 10 queries
+    const finalQueries = [...baseQueries, ...enhancedQueries].slice(0, 10); // Limit to 10 queries
+    console.log("Final search queries:", finalQueries);
+    return finalQueries;
   }
 
   private async performWebSearch(query: string): Promise<any> {
@@ -233,14 +243,22 @@ These are live listings scraped from major business-for-sale platforms including
   }
 
   private getDemoBusinessData(query: string): string {
+    console.log("getDemoBusinessData called with query:", query);
+    
     // Extract location from query for targeted demo data
     const locationMatch = query.match(/(Houston|New York|NYC|Los Angeles|LA|San Francisco)/i);
     const searchLocation = locationMatch ? locationMatch[0].toLowerCase() : '';
     
+    console.log("Extracted location from query:", searchLocation || "none");
+    
     // Get demo businesses for the specified location
     let filteredBusinesses = this.getAllDemoBusinesses();
+    console.log("Total demo businesses available:", filteredBusinesses.length);
     
+    // Only filter by location if a specific location is requested
+    // If no location specified, return businesses from all locations
     if (searchLocation) {
+      console.log("Filtering businesses by location:", searchLocation);
       filteredBusinesses = filteredBusinesses.filter(business => {
         const businessLocation = business.location.toLowerCase();
         return (
@@ -253,10 +271,14 @@ These are live listings scraped from major business-for-sale platforms including
           (searchLocation.includes('san francisco') && businessLocation.includes('san francisco'))
         );
       });
+    } else {
+      // For "Any Location", shuffle businesses to get a mix from all cities
+      console.log("No location specified, shuffling businesses for mixed-city results");
+      filteredBusinesses = this.shuffleArray(filteredBusinesses);
     }
     
-    // Limit results for performance
-    filteredBusinesses = filteredBusinesses.slice(0, 8);
+    // Return more results for better filtering experience
+    filteredBusinesses = filteredBusinesses.slice(0, 20);
     
     const resultText = `
 Demo Business Listing Search Results for "${query}":
@@ -272,6 +294,36 @@ ${index + 1}. ${business.name} - ${business.price}
 These are demo business listings for demonstration purposes.`;
 
     return resultText;
+  }
+
+  // Helper method to shuffle array for random distribution
+  private shuffleArray(array: any[]): any[] {
+    console.log("shuffleArray called with", array.length, "businesses");
+    
+    // Log first few locations before shuffle
+    console.log("Before shuffle - first 5 business locations:", 
+      array.slice(0, 5).map(b => b.location));
+    
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    // Log first few locations after shuffle
+    console.log("After shuffle - first 5 business locations:", 
+      shuffled.slice(0, 5).map(b => b.location));
+    
+    // Log distribution of cities in first 20 results
+    const first20 = shuffled.slice(0, 20);
+    const cityCount = first20.reduce((acc, b) => {
+      const city = b.location.split(',')[0];
+      acc[city] = (acc[city] || 0) + 1;
+      return acc;
+    }, {});
+    console.log("City distribution in first 20 shuffled results:", cityCount);
+    
+    return shuffled;
   }
 
   private getAllDemoBusinesses() {
@@ -1685,20 +1737,40 @@ These represent active listings from major business-for-sale platforms with veri
     } catch (error) {
       console.error("Error analyzing businesses:", error);
       
-      // Return fallback sample data based on the web search results
-      return this.createFallbackBusinesses(searchResultsText);
+      // Return fallback sample data based on user preferences, not search results text
+      return this.createFallbackBusinesses(searchResultsText, preferences);
     }
   }
   
-  private createFallbackBusinesses(searchResults?: string): ScrapedBusiness[] {
-    // Extract location from search results for targeted demo data
-    const locationMatch = searchResults?.match(/(Houston|New York|NYC|Los Angeles|LA|San Francisco)/i);
-    const searchLocation = locationMatch ? locationMatch[0].toLowerCase() : '';
+  private createFallbackBusinesses(searchResults?: string, preferences?: UserPreferences): ScrapedBusiness[] {
+    console.log("createFallbackBusinesses called with preferences location:", preferences?.location);
+    
+    // Use user preferences location instead of extracting from search results
+    // This prevents incorrect filtering when OpenAI analysis fails on mixed-city results
+    let searchLocation = '';
+    
+    if (preferences?.location) {
+      if (preferences.location === 'Any Location') {
+        // Explicitly set to Any Location - do not filter by city
+        searchLocation = '';
+        console.log("User preference is 'Any Location', not filtering by city");
+      } else {
+        // Specific city preference
+        searchLocation = preferences.location.toLowerCase();
+      }
+    } else {
+      // No user preference, try to extract location from search results as fallback
+      const locationMatch = searchResults?.match(/(Houston|New York|NYC|Los Angeles|LA|San Francisco)/i);
+      searchLocation = locationMatch ? locationMatch[0].toLowerCase() : '';
+    }
     
     // Get demo businesses for the specified location from our comprehensive demo data
     let filteredBusinesses = this.getAllDemoBusinesses();
     
+    // Only filter by location if a specific location is requested
+    // If no location specified, return businesses from all locations
     if (searchLocation) {
+      console.log("Filtering createFallbackBusinesses by location:", searchLocation);
       filteredBusinesses = filteredBusinesses.filter(business => {
         const businessLocation = business.location.toLowerCase();
         return (
@@ -1711,10 +1783,14 @@ These represent active listings from major business-for-sale platforms with veri
           (searchLocation.includes('san francisco') && businessLocation.includes('san francisco'))
         );
       });
+    } else {
+      // For "Any Location", shuffle businesses to get a mix from all cities
+      console.log("No location specified in createFallbackBusinesses, shuffling for mixed results");
+      filteredBusinesses = this.shuffleArray(filteredBusinesses);
     }
     
-    // Limit results for performance and convert to ScrapedBusiness format
-    const selectedBusinesses = filteredBusinesses.slice(0, 3);
+    // Convert to ScrapedBusiness format - return more results
+    const selectedBusinesses = filteredBusinesses.slice(0, 15);
     
     return selectedBusinesses.map((business, index) => ({
       name: business.name,

@@ -252,7 +252,7 @@ export function SearchFilters({ filters, onFiltersChange, onClearFilters }: Sear
               value={filters.priceRange}
               onValueChange={handlePriceRangeChange}
               max={5000000}
-              min={50000}
+              min={Math.min(filters.priceRange[0], 50000)}
               step={25000}
               className="w-full"
               data-testid="slider-price-range"
@@ -266,7 +266,7 @@ export function SearchFilters({ filters, onFiltersChange, onClearFilters }: Sear
               value={filters.revenueRange}
               onValueChange={handleRevenueRangeChange}
               max={10000000}
-              min={100000}
+              min={Math.min(filters.revenueRange[0], 100000)}
               step={50000}
               className="w-full"
               data-testid="slider-revenue-range"
