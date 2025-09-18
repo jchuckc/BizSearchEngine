@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "@shared/schema";
+import { queryClient } from "@/lib/queryClient";
 
 interface AuthContextType {
   user: User | null;
@@ -88,9 +89,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       setUser(null);
+      // Clear user-specific cached data
+      queryClient.removeQueries({ queryKey: ['user'] });
+      queryClient.removeQueries({ queryKey: ['businesses', 'ranked'] });
     } catch (error) {
       console.error("Error logging out:", error);
       setUser(null);
+      // Clear cache even if logout request fails
+      queryClient.removeQueries({ queryKey: ['user'] });
+      queryClient.removeQueries({ queryKey: ['businesses', 'ranked'] });
     }
   };
 

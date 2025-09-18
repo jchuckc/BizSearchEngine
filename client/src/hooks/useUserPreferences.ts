@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { type UserPreferences, type InsertUserPreferences } from '@shared/schema';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UserPreferencesResponse {
   preferences: UserPreferences | null;
@@ -21,8 +22,10 @@ interface SearchHistoryResponse {
 
 // Hook for fetching user preferences
 export function useUserPreferences() {
+  const { isAuthenticated, user } = useAuth();
+  
   return useQuery({
-    queryKey: ['user', 'preferences'],
+    queryKey: ['user', 'preferences', user?.id],
     queryFn: async (): Promise<UserPreferencesResponse> => {
       const response = await fetch('/api/user/preferences');
       if (!response.ok) {
@@ -33,6 +36,7 @@ export function useUserPreferences() {
       }
       return response.json();
     },
+    enabled: isAuthenticated && !!user,
     retry: (failureCount, error) => {
       // Don't retry auth errors
       if (error.message === 'Authentication required') return false;
@@ -93,8 +97,10 @@ export function useUpdateUserPreferences() {
 
 // Hook for fetching user search history
 export function useSearchHistory(limit: number = 20) {
+  const { isAuthenticated, user } = useAuth();
+  
   return useQuery({
-    queryKey: ['user', 'searchHistory', limit],
+    queryKey: ['user', 'searchHistory', user?.id, limit],
     queryFn: async (): Promise<SearchHistoryResponse> => {
       const response = await fetch(`/api/user/search-history?limit=${limit}`);
       if (!response.ok) {
@@ -105,6 +111,7 @@ export function useSearchHistory(limit: number = 20) {
       }
       return response.json();
     },
+    enabled: isAuthenticated && !!user,
     retry: (failureCount, error) => {
       // Don't retry auth errors
       if (error.message === 'Authentication required') return false;

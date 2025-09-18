@@ -2,7 +2,7 @@ import { BusinessCard } from "./BusinessCard";
 import { BusinessDetailsModal } from "./BusinessDetailsModal";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUpDown, Grid, List, RefreshCw } from "lucide-react";
+import { ArrowUpDown, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { type Business } from "@shared/schema";
 import { useBusiness } from "@/hooks/useBusinesses";
@@ -18,7 +18,6 @@ interface BusinessListProps {
 }
 
 type SortOption = "askingPrice" | "annualRevenue" | "cashFlow" | "yearEstablished";
-type ViewMode = "grid" | "list";
 
 export function BusinessList({ 
   businesses, 
@@ -31,7 +30,6 @@ export function BusinessList({
 }: BusinessListProps) {
   const [sortBy, setSortBy] = useState<SortOption>("askingPrice");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -121,25 +119,6 @@ export function BusinessList({
             </Button>
           )}
           
-          {/* View Mode Toggle */}
-          <div className="flex bg-muted rounded-lg p-1">
-            <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              data-testid="button-view-grid"
-            >
-              <Grid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-              data-testid="button-view-list"
-            >
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
 
           {/* Sort Options */}
           <Select value={sortBy} onValueChange={(value: SortOption) => handleSort(value)} data-testid="select-sort">
@@ -165,12 +144,8 @@ export function BusinessList({
         </div>
       </div>
 
-      {/* Business Grid/List */}
-      <div className={`${
-        viewMode === "grid" 
-          ? "grid gap-6 md:grid-cols-2 lg:grid-cols-3" 
-          : "space-y-4"
-      }`}>
+      {/* Business List */}
+      <div className="space-y-4">
         {sortedBusinesses.map((business) => (
           <BusinessCard
             key={business.id}

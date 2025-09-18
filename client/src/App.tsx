@@ -9,6 +9,7 @@ import { AppHeader } from "@/components/AppHeader";
 import HomePage from "@/pages/HomePage";
 import NotFound from "@/pages/not-found";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 function Router() {
   return (
@@ -20,8 +21,9 @@ function Router() {
   );
 }
 
-function App() {
+function AppContent() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
 
   const handleSearch = (query: string) => {
     console.log(`Global search: ${query}`);
@@ -39,21 +41,29 @@ function App() {
   };
 
   return (
+    <div className="min-h-screen bg-background text-foreground">
+      <AppHeader
+        onSearch={handleSearch}
+        onShowProfile={handleShowProfile}
+        onShowSettings={handleShowSettings}
+        onToggleMobileMenu={() => setShowMobileMenu(!showMobileMenu)}
+        onLogout={logout}
+        isAuthenticated={isAuthenticated}
+      />
+      <main className="flex-1">
+        <Router />
+      </main>
+    </div>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="light" storageKey="bizsearch-theme">
           <AuthProvider>
-            <div className="min-h-screen bg-background text-foreground">
-              <AppHeader
-                onSearch={handleSearch}
-                onShowProfile={handleShowProfile}
-                onShowSettings={handleShowSettings}
-                onToggleMobileMenu={() => setShowMobileMenu(!showMobileMenu)}
-              />
-              <main className="flex-1">
-                <Router />
-              </main>
-            </div>
+            <AppContent />
             <Toaster />
           </AuthProvider>
         </ThemeProvider>

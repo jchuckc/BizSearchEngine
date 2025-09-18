@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "./ThemeToggle";
-import { Search, Building2, User, Settings, Menu } from "lucide-react";
+import { Search, Building2, User, Settings, Menu, LogOut } from "lucide-react";
 import { useState } from "react";
 
 interface AppHeaderProps {
@@ -9,9 +9,11 @@ interface AppHeaderProps {
   onShowProfile: () => void;
   onShowSettings: () => void;
   onToggleMobileMenu?: () => void;
+  onLogout?: () => void;
+  isAuthenticated?: boolean;
 }
 
-export function AppHeader({ onSearch, onShowProfile, onShowSettings, onToggleMobileMenu }: AppHeaderProps) {
+export function AppHeader({ onSearch, onShowProfile, onShowSettings, onToggleMobileMenu, onLogout, isAuthenticated }: AppHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = () => {
@@ -112,6 +114,19 @@ export function AppHeader({ onSearch, onShowProfile, onShowSettings, onToggleMob
               <Settings className="h-5 w-5" />
               <span className="hidden sm:inline ml-2">Settings</span>
             </Button>
+
+            {/* Logout */}
+            {isAuthenticated && onLogout && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onLogout}
+                data-testid="button-logout"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="hidden sm:inline ml-2">Logout</span>
+              </Button>
+            )}
 
             {/* Theme Toggle */}
             <ThemeToggle />
