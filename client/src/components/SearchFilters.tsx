@@ -143,6 +143,12 @@ export function SearchFilters({ filters, onFiltersChange, onClearFilters }: Sear
   }, [locationSearch]);
 
   const handleIndustryToggle = (industry: string) => {
+    // Handle "Any" industry selection by clearing all industries
+    if (industry === "Any") {
+      onFiltersChange({ ...filters, industry: [] });
+      return;
+    }
+    
     const newIndustries = filters.industry.includes(industry)
       ? filters.industry.filter(i => i !== industry)
       : [...filters.industry, industry];
