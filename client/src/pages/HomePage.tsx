@@ -111,7 +111,7 @@ export default function HomePage() {
         ebitda: wb.ebitda,
         employees: wb.employees,
         yearEstablished: wb.yearEstablished,
-        aiScore: wb.ranking || 0,
+        aiScore: wb.compatibilityScore || wb.ranking || 0,
         sourceUrl: wb.sourceUrl || '',
         sourceSite: wb.sourceSite || '',
         createdAt: new Date(),
