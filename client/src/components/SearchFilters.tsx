@@ -18,6 +18,7 @@ interface FilterState {
   riskTolerance: string;
   involvement: string;
   employees: string;
+  paybackPeriod: string;
 }
 
 interface SearchFiltersProps {
@@ -59,6 +60,13 @@ const employeeSizes = [
   { value: "small", label: "Small - Under 10 employees" },
   { value: "medium", label: "Medium - 10-50 employees" },
   { value: "large", label: "Large - 50+ employees" }
+];
+
+const paybackPeriods = [
+  { value: "any", label: "Any" },
+  { value: "1-2 years", label: "1-2 years - Quick return" },
+  { value: "3-5 years", label: "3-5 years - Medium term" },
+  { value: "5+ years", label: "5+ years - Long term" }
 ];
 
 const majorUSCities = [
@@ -252,7 +260,7 @@ export function SearchFilters({ filters, onFiltersChange, onClearFilters }: Sear
               value={filters.priceRange}
               onValueChange={handlePriceRangeChange}
               max={5000000}
-              min={Math.min(filters.priceRange[0], 50000)}
+              min={0}
               step={25000}
               className="w-full"
               data-testid="slider-price-range"
@@ -266,7 +274,7 @@ export function SearchFilters({ filters, onFiltersChange, onClearFilters }: Sear
               value={filters.revenueRange}
               onValueChange={handleRevenueRangeChange}
               max={10000000}
-              min={Math.min(filters.revenueRange[0], 100000)}
+              min={0}
               step={50000}
               className="w-full"
               data-testid="slider-revenue-range"
@@ -360,6 +368,27 @@ export function SearchFilters({ filters, onFiltersChange, onClearFilters }: Sear
                 {employeeSizes.map((size) => (
                   <SelectItem key={size.value} value={size.value}>
                     {size.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Expected Payback Period */}
+          <div className="space-y-2">
+            <Label>Expected Payback Period</Label>
+            <Select
+              value={filters.paybackPeriod}
+              onValueChange={(value) => onFiltersChange({ ...filters, paybackPeriod: value })}
+              data-testid="select-payback-period"
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select payback period..." />
+              </SelectTrigger>
+              <SelectContent>
+                {paybackPeriods.map((period) => (
+                  <SelectItem key={period.value} value={period.value}>
+                    {period.label}
                   </SelectItem>
                 ))}
               </SelectContent>

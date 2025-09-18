@@ -1722,31 +1722,25 @@ These represent active listings from major business-for-sale platforms with veri
     }
   }
   
-  private createFallbackBusinesses(searchResults?: string, preferences?: UserPreferences): ScrapedBusiness[] {
-    // Use user preferences location instead of extracting from search results
-    // This prevents incorrect filtering when OpenAI analysis fails on mixed-city results
-    let searchLocation = '';
+  // Comprehensive filtering function to apply all filter criteria
+  private applyComprehensiveFilters(businesses: any[], preferences?: UserPreferences | any): any[] {
+    let filteredBusinesses = [...businesses];
     
-    if (preferences?.location) {
-      if (preferences.location === 'Any Location') {
-        // Explicitly set to Any Location - do not filter by city
-        searchLocation = '';
-      } else {
-        // Specific city preference
-        searchLocation = preferences.location.toLowerCase();
-      }
-    } else {
-      // No user preference, try to extract location from search results as fallback
-      const locationMatch = searchResults?.match(/(Houston|New York|NYC|Los Angeles|LA|San Francisco)/i);
-      searchLocation = locationMatch ? locationMatch[0].toLowerCase() : '';
+    console.log("applyComprehensiveFilters called with:", {
+      businessCount: businesses.length,
+      preferences: JSON.stringify(preferences, null, 2)
+    });
+
+    if (!preferences) {
+      console.log("No preferences provided, returning all businesses");
+      return filteredBusinesses;
     }
-    
-    // Get demo businesses for the specified location from our comprehensive demo data
-    let filteredBusinesses = this.getAllDemoBusinesses();
-    
-    // Only filter by location if a specific location is requested
-    // If no location specified, return businesses from all locations
-    if (searchLocation) {
+
+    // Filter by location
+    if (preferences.location && preferences.location !== 'Any Location' && preferences.location !== '') {
+      const searchLocation = preferences.location.toLowerCase();
+      console.log("Filtering by location:", searchLocation);
+      const beforeCount = filteredBusinesses.length;
       filteredBusinesses = filteredBusinesses.filter(business => {
         const businessLocation = business.location.toLowerCase();
         return (
@@ -1759,14 +1753,100 @@ These represent active listings from major business-for-sale platforms with veri
           (searchLocation.includes('san francisco') && businessLocation.includes('san francisco'))
         );
       });
-    } else {
-      // For "Any Location", shuffle businesses to get a mix from all cities
+      console.log(`Location filter: ${beforeCount} → ${filteredBusinesses.length} businesses`);
+    } else if (!preferences.location || preferences.location === 'Any Location') {
+      // For "Any Location", shuffle businesses for random distribution
+      console.log("Any Location selected, shuffling businesses");
       filteredBusinesses = this.shuffleArray(filteredBusinesses);
     }
+
+    // Filter by price range - check both capitalRange AND priceRange
+    const priceRange = preferences.priceRange || preferences.capitalRange;
+    if (priceRange && priceRange.length === 2) {
+      const [minPrice, maxPrice] = priceRange;
+      console.log("Filtering by price range:", { minPrice, maxPrice });
+      const beforeCount = filteredBusinesses.length;
+      filteredBusinesses = filteredBusinesses.filter(business => {
+        const askingPrice = parseInt(business.price.replace(/[$,]/g, ''));
+        const matches = askingPrice >= minPrice && askingPrice <= maxPrice;
+        if (!matches) {
+          console.log(`Filtering out business: ${business.name} (${business.price} → ${askingPrice})`);
+        }
+        return matches;
+      });
+      console.log(`Price filter: ${beforeCount} → ${filteredBusinesses.length} businesses`);
+    }
+
+    // Filter by revenue range  
+    if (preferences.revenueRange && preferences.revenueRange.length === 2) {
+      const [minRevenue, maxRevenue] = preferences.revenueRange;
+      console.log("Filtering by revenue range:", { minRevenue, maxRevenue });
+      const beforeCount = filteredBusinesses.length;
+      filteredBusinesses = filteredBusinesses.filter(business => {
+        const revenue = parseInt(business.revenue.replace(/[$,KM]/g, '')) * (business.revenue.includes('M') ? 1000000 : business.revenue.includes('K') ? 1000 : 1);
+        const matches = revenue >= minRevenue && revenue <= maxRevenue;
+        if (!matches) {
+          console.log(`Filtering out business: ${business.name} (${business.revenue} → ${revenue})`);
+        }
+        return matches;
+      });
+      console.log(`Revenue filter: ${beforeCount} → ${filteredBusinesses.length} businesses`);
+    }
+
+    // Filter by industries
+    if (preferences.industries && preferences.industries.length > 0) {
+      console.log("Filtering by industries:", preferences.industries);
+      const beforeCount = filteredBusinesses.length;
+      filteredBusinesses = filteredBusinesses.filter(business => 
+        preferences.industries!.some((industry: string) => 
+          business.industry.toLowerCase().includes(industry.toLowerCase())
+        )
+      );
+      console.log(`Industry filter: ${beforeCount} → ${filteredBusinesses.length} businesses`);
+    }
+
+    // Filter by business size (employee count) - check both businessSize AND employees
+    const employeeFilter = preferences.employees || preferences.businessSize;
+    if (employeeFilter && employeeFilter !== 'any') {
+      console.log("Filtering by employee count:", employeeFilter);
+      const beforeCount = filteredBusinesses.length;
+      filteredBusinesses = filteredBusinesses.filter(business => {
+        const employees = business.employees;
+        let matches = true;
+        switch (employeeFilter) {
+          case 'small':
+            matches = employees < 10;
+            break;
+          case 'medium':
+            matches = employees >= 10 && employees <= 50;
+            break;
+          case 'large':
+            matches = employees > 50;
+            break;
+          default:
+            matches = true;
+        }
+        if (!matches) {
+          console.log(`Filtering out business: ${business.name} (${employees} employees)`);
+        }
+        return matches;
+      });
+      console.log(`Employee filter: ${beforeCount} → ${filteredBusinesses.length} businesses`);
+    }
+
+    console.log(`Final filtered business count: ${filteredBusinesses.length}`);
+    return filteredBusinesses;
+  }
+
+  private createFallbackBusinesses(searchResults?: string, preferences?: UserPreferences): ScrapedBusiness[] {
+    // Get all demo businesses and apply comprehensive filtering
+    let filteredBusinesses = this.getAllDemoBusinesses();
     
-    // Convert to ScrapedBusiness format - return all results for comprehensive view
-    // Only limit if location filtering was applied
-    const selectedBusinesses = searchLocation ? filteredBusinesses.slice(0, 25) : filteredBusinesses;
+    // Apply all filters using comprehensive filtering logic
+    filteredBusinesses = this.applyComprehensiveFilters(filteredBusinesses, preferences);
+    
+    // Convert to ScrapedBusiness format
+    const selectedBusinesses = filteredBusinesses;
     
     return selectedBusinesses.map((business, index) => ({
       name: business.name,
@@ -1858,9 +1938,6 @@ Note: No specific user preferences provided. Please rank businesses based on gen
       parts.push(`Preferred Business Size: ${preferences.businessSize}`);
     }
     
-    if (preferences.targetIncome) {
-      parts.push(`Target Income: ${preferences.targetIncome}`);
-    }
     
     if (preferences.paybackPeriod) {
       parts.push(`Expected Payback Period: ${preferences.paybackPeriod}`);

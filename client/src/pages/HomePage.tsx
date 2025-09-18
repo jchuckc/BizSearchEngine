@@ -60,7 +60,8 @@ export default function HomePage() {
     industry: [] as string[],
     riskTolerance: "any",
     involvement: "any",
-    employees: "any"
+    employees: "any",
+    paybackPeriod: "any"
   });
 
   // API hooks - all must be called unconditionally at the top level
@@ -79,7 +80,8 @@ export default function HomePage() {
         industry: prefs.industries || [],
         riskTolerance: prefs.riskTolerance || "any",
         involvement: prefs.involvement || "any",
-        employees: prefs.businessSize || "any"
+        employees: prefs.businessSize || "any",
+        paybackPeriod: prefs.paybackPeriod || "any"
       });
     }
   }, [userPreferencesData, isAuthenticated]);
@@ -198,7 +200,8 @@ export default function HomePage() {
       industry: [],
       riskTolerance: "any",
       involvement: "any",
-      employees: "any"
+      employees: "any",
+      paybackPeriod: "any"
     });
   };
 

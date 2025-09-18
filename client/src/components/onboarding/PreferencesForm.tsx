@@ -58,7 +58,6 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
       max: ""
     },
     riskTolerance: "",
-    targetIncome: "",
     involvement: "",
     location: "",
     businessSize: "",
@@ -94,7 +93,6 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
             parseInt(preferences.revenueRange.max) || 10000000
           ],
           riskTolerance: preferences.riskTolerance,
-          targetIncome: preferences.targetIncome,
           involvement: preferences.involvement,
           location: preferences.location,
           businessSize: preferences.businessSize,
@@ -210,18 +208,6 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
               </div>
             </div>
 
-            {/* Target Income */}
-            <div className="space-y-2">
-              <Label htmlFor="target-income">Target Annual Income</Label>
-              <Input
-                id="target-income"
-                type="number"
-                placeholder="e.g., 150000"
-                value={preferences.targetIncome}
-                onChange={(e) => setPreferences(prev => ({ ...prev, targetIncome: e.target.value }))}
-                data-testid="input-target-income"
-              />
-            </div>
 
             {/* Risk Tolerance */}
             <div className="space-y-2">
@@ -341,7 +327,7 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
                   <SelectItem value="small">Small - Under 10 employees</SelectItem>
                   <SelectItem value="medium">Medium - 10-50 employees</SelectItem>
                   <SelectItem value="large">Large - 50+ employees</SelectItem>
-                  <SelectItem value="any">No preference</SelectItem>
+                  <SelectItem value="any">Any Size</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -357,6 +343,7 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
                   <SelectValue placeholder="When do you expect to recoup investment?" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="1-2 years">1-2 years - Quick return</SelectItem>
                   <SelectItem value="3-5 years">3-5 years - Medium term</SelectItem>
                   <SelectItem value="5+ years">5+ years - Long term</SelectItem>
