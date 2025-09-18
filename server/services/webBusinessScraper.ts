@@ -279,6 +279,61 @@ export class WebBusinessScraperService {
         employees: 6,
         description: "IT support and consulting firm specializing in small business technology solutions across the Chicago metro area.",
         source: "BusinessBroker.net/tech-services-chicago-il"
+      },
+      {
+        name: "Houston Energy Consulting",
+        price: "$850,000",
+        location: "Houston, TX",
+        industry: "Energy & Oil",
+        revenue: "$1.2M",
+        cashFlow: "$320K",
+        employees: 14,
+        description: "Specialized energy consulting firm serving oil and gas companies with regulatory compliance and project management services.",
+        source: "BizBuySell.com/houston-energy-consulting-texas"
+      },
+      {
+        name: "Gulf Coast Manufacturing",
+        price: "$1,200,000",
+        location: "Houston, TX",
+        industry: "Manufacturing",
+        revenue: "$1.8M",
+        cashFlow: "$450K",
+        employees: 25,
+        description: "Industrial manufacturing company specializing in oil and gas equipment with established customer base and long-term contracts.",
+        source: "BizQuest.com/manufacturing-houston-tx"
+      },
+      {
+        name: "Houston Digital Solutions",
+        price: "$680,000",
+        location: "Houston, TX",
+        industry: "Technology Services",
+        revenue: "$920K",
+        cashFlow: "$275K",
+        employees: 12,
+        description: "Full-service digital marketing and web development agency serving the greater Houston metropolitan area.",
+        source: "BusinessBroker.net/digital-agency-houston-texas"
+      },
+      {
+        name: "Space City Medical Practice",
+        price: "$950,000",
+        location: "Houston, TX",
+        industry: "Healthcare",
+        revenue: "$1.4M",
+        cashFlow: "$380K",
+        employees: 18,
+        description: "Established medical practice with multiple specialties and loyal patient base in growing Houston suburb.",
+        source: "MedicalPracticeBrokers.com/houston-medical-practice"
+      },
+      {
+        name: "Texas Logistics Hub",
+        price: "$1,100,000",
+        location: "Houston, TX",
+        industry: "Logistics & Transportation",
+        revenue: "$1.6M",
+        cashFlow: "$420K",
+        employees: 22,
+        description: "Strategic logistics and distribution center with prime Houston location and major corporate contracts.",
+        source: "BizBuySell.com/logistics-houston-tx"
       }
     ];
 
@@ -286,7 +341,7 @@ export class WebBusinessScraperService {
     let filteredBusinesses = allBusinesses;
     
     // Extract location from query if present
-    const locationRegex = /(New York|NYC|Manhattan|Brooklyn|Los Angeles|LA|California|Miami|Denver|Portland|Austin|Chicago|Boston|Seattle|Atlanta|Phoenix|Philadelphia|San Francisco|Dallas|Houston)/i;
+    const locationRegex = /(New York|NYC|Manhattan|Brooklyn|Los Angeles|LA|California|Miami|Denver|Portland|Austin|Chicago|Boston|Seattle|Atlanta|Phoenix|Philadelphia|San Francisco|Dallas|Houston|Texas)/i;
     const locationMatch = query.match(locationRegex);
     
     if (locationMatch) {
@@ -304,7 +359,10 @@ export class WebBusinessScraperService {
           // California variations
           (searchLocation.includes('california') && businessLocation.includes('ca')) ||
           // Chicago variations
-          (searchLocation.includes('chicago') && businessLocation.includes('chicago'))
+          (searchLocation.includes('chicago') && businessLocation.includes('chicago')) ||
+          // Houston/Texas variations
+          (searchLocation.includes('houston') && businessLocation.includes('houston')) ||
+          (searchLocation.includes('texas') && businessLocation.includes('tx'))
         );
         return isMatch;
       });

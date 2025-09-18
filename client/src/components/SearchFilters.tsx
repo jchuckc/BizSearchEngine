@@ -28,16 +28,16 @@ interface SearchFiltersProps {
 
 const industries = [
   "Any",
-  "Food & Beverage",
-  "Retail",
   "Technology",
-  "Healthcare",
+  "Healthcare", 
+  "Finance",
   "Manufacturing",
-  "Professional Services",
+  "Retail",
+  "Food & Beverage",
+  "Services",
   "Real Estate",
-  "Transportation",
   "Education",
-  "Entertainment"
+  "Transportation"
 ];
 
 const riskLevels = [
@@ -56,10 +56,9 @@ const involvementLevels = [
 
 const employeeSizes = [
   { value: "any", label: "Any Size" },
-  { value: "1-5", label: "1-5 employees" },
-  { value: "6-15", label: "6-15 employees" },
-  { value: "16-50", label: "16-50 employees" },
-  { value: "50+", label: "50+ employees" }
+  { value: "small", label: "Small - Under 10 employees" },
+  { value: "medium", label: "Medium - 10-50 employees" },
+  { value: "large", label: "Large - 50+ employees" }
 ];
 
 const majorUSCities = [
