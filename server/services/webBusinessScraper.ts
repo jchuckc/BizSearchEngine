@@ -249,16 +249,12 @@ These are live listings scraped from major business-for-sale platforms including
     const locationMatch = query.match(/(Houston|New York|NYC|Los Angeles|LA|San Francisco)/i);
     const searchLocation = locationMatch ? locationMatch[0].toLowerCase() : '';
     
-    console.log("Extracted location from query:", searchLocation || "none");
-    
     // Get demo businesses for the specified location
     let filteredBusinesses = this.getAllDemoBusinesses();
-    console.log("Total demo businesses available:", filteredBusinesses.length);
     
     // Only filter by location if a specific location is requested
     // If no location specified, return businesses from all locations
     if (searchLocation) {
-      console.log("Filtering businesses by location:", searchLocation);
       filteredBusinesses = filteredBusinesses.filter(business => {
         const businessLocation = business.location.toLowerCase();
         return (
@@ -273,12 +269,16 @@ These are live listings scraped from major business-for-sale platforms including
       });
     } else {
       // For "Any Location", shuffle businesses to get a mix from all cities
-      console.log("No location specified, shuffling businesses for mixed-city results");
       filteredBusinesses = this.shuffleArray(filteredBusinesses);
     }
     
-    // Return more results for better filtering experience
-    filteredBusinesses = filteredBusinesses.slice(0, 20);
+    // Return all results for comprehensive filtering experience
+    // Only limit if specific location filtering was applied  
+    if (searchLocation) {
+      // Limit location-specific results to avoid overwhelming UI
+      filteredBusinesses = filteredBusinesses.slice(0, 25);
+    }
+    // For "Any Location", return all businesses (no slice)
     
     const resultText = `
 Demo Business Listing Search Results for "${query}":
@@ -298,31 +298,11 @@ These are demo business listings for demonstration purposes.`;
 
   // Helper method to shuffle array for random distribution
   private shuffleArray(array: any[]): any[] {
-    console.log("shuffleArray called with", array.length, "businesses");
-    
-    // Log first few locations before shuffle
-    console.log("Before shuffle - first 5 business locations:", 
-      array.slice(0, 5).map(b => b.location));
-    
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    
-    // Log first few locations after shuffle
-    console.log("After shuffle - first 5 business locations:", 
-      shuffled.slice(0, 5).map(b => b.location));
-    
-    // Log distribution of cities in first 20 results
-    const first20 = shuffled.slice(0, 20);
-    const cityCount = first20.reduce((acc, b) => {
-      const city = b.location.split(',')[0];
-      acc[city] = (acc[city] || 0) + 1;
-      return acc;
-    }, {});
-    console.log("City distribution in first 20 shuffled results:", cityCount);
-    
     return shuffled;
   }
 
@@ -1743,8 +1723,6 @@ These represent active listings from major business-for-sale platforms with veri
   }
   
   private createFallbackBusinesses(searchResults?: string, preferences?: UserPreferences): ScrapedBusiness[] {
-    console.log("createFallbackBusinesses called with preferences location:", preferences?.location);
-    
     // Use user preferences location instead of extracting from search results
     // This prevents incorrect filtering when OpenAI analysis fails on mixed-city results
     let searchLocation = '';
@@ -1753,7 +1731,6 @@ These represent active listings from major business-for-sale platforms with veri
       if (preferences.location === 'Any Location') {
         // Explicitly set to Any Location - do not filter by city
         searchLocation = '';
-        console.log("User preference is 'Any Location', not filtering by city");
       } else {
         // Specific city preference
         searchLocation = preferences.location.toLowerCase();
@@ -1770,7 +1747,6 @@ These represent active listings from major business-for-sale platforms with veri
     // Only filter by location if a specific location is requested
     // If no location specified, return businesses from all locations
     if (searchLocation) {
-      console.log("Filtering createFallbackBusinesses by location:", searchLocation);
       filteredBusinesses = filteredBusinesses.filter(business => {
         const businessLocation = business.location.toLowerCase();
         return (
@@ -1785,12 +1761,12 @@ These represent active listings from major business-for-sale platforms with veri
       });
     } else {
       // For "Any Location", shuffle businesses to get a mix from all cities
-      console.log("No location specified in createFallbackBusinesses, shuffling for mixed results");
       filteredBusinesses = this.shuffleArray(filteredBusinesses);
     }
     
-    // Convert to ScrapedBusiness format - return more results
-    const selectedBusinesses = filteredBusinesses.slice(0, 15);
+    // Convert to ScrapedBusiness format - return all results for comprehensive view
+    // Only limit if location filtering was applied
+    const selectedBusinesses = searchLocation ? filteredBusinesses.slice(0, 25) : filteredBusinesses;
     
     return selectedBusinesses.map((business, index) => ({
       name: business.name,
