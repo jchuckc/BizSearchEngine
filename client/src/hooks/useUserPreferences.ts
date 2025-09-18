@@ -47,6 +47,8 @@ export function useUserPreferences() {
 
 // Mutation for creating user preferences
 export function useCreateUserPreferences() {
+  const { user } = useAuth();
+  
   return useMutation({
     mutationFn: async (data: InsertUserPreferences): Promise<UserPreferences> => {
       const response = await fetch('/api/user/preferences', {
@@ -62,8 +64,12 @@ export function useCreateUserPreferences() {
       return result.preferences;
     },
     onSuccess: (data) => {
-      // Update the cache with new preferences
-      queryClient.setQueryData(['user', 'preferences'], { preferences: data });
+      // Update the cache with new preferences using correct key
+      if (user?.id) {
+        queryClient.setQueryData(['user', 'preferences', user.id], { preferences: data });
+      }
+      // Also invalidate all preference queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] });
       // Invalidate ranked businesses since preferences changed
       queryClient.invalidateQueries({ queryKey: ['businesses', 'ranked'] });
     },
@@ -72,6 +78,8 @@ export function useCreateUserPreferences() {
 
 // Mutation for updating user preferences
 export function useUpdateUserPreferences() {
+  const { user } = useAuth();
+  
   return useMutation({
     mutationFn: async (data: Partial<InsertUserPreferences>): Promise<UserPreferences> => {
       const response = await fetch('/api/user/preferences', {
@@ -87,8 +95,12 @@ export function useUpdateUserPreferences() {
       return result.preferences;
     },
     onSuccess: (data) => {
-      // Update the cache with new preferences
-      queryClient.setQueryData(['user', 'preferences'], { preferences: data });
+      // Update the cache with new preferences using correct key
+      if (user?.id) {
+        queryClient.setQueryData(['user', 'preferences', user.id], { preferences: data });
+      }
+      // Also invalidate all preference queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] });
       // Invalidate ranked businesses since preferences changed
       queryClient.invalidateQueries({ queryKey: ['businesses', 'ranked'] });
     },
