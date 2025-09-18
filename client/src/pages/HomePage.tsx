@@ -67,6 +67,22 @@ export default function HomePage() {
   const createPreferencesMutation = useCreateUserPreferences();
   const webSearchMutation = useWebBusinessSearch();
 
+  // Initialize filters with user preferences when available
+  useEffect(() => {
+    if (userPreferencesData?.preferences && isAuthenticated) {
+      const prefs = userPreferencesData.preferences;
+      setFilters({
+        priceRange: prefs.capitalRange || [50000, 5000000],
+        revenueRange: [100000, 10000000], // Keep default for revenue since it's not in preferences
+        location: prefs.location === "any" ? "" : prefs.location || "",
+        industry: prefs.industries || [],
+        riskTolerance: prefs.riskTolerance || "any",
+        involvement: prefs.involvement || "any",
+        employees: prefs.businessSize || "any"
+      });
+    }
+  }, [userPreferencesData, isAuthenticated]);
+
   // Only show web search results
   const hasWebSearchResults = webSearchMutation.data?.businesses && webSearchMutation.data.businesses.length > 0;
   
@@ -147,13 +163,11 @@ export default function HomePage() {
   ];
 
   const handleSearch = (query: string) => {
-    console.log(`Searching for: ${query}`);
     setSearchQuery(query);
     setShowBusinesses(true);
   };
 
   const handleGetStarted = () => {
-    console.log("Get Started clicked, isAuthenticated:", isAuthenticated, "userPreferences:", userPreferencesData?.preferences);
     // Always show onboarding for non-authenticated users or users without preferences
     if (!isAuthenticated || !userPreferencesData?.preferences) {
       setShowOnboarding(true);
@@ -163,7 +177,6 @@ export default function HomePage() {
   };
 
   const handleOnboardingComplete = async (data: InsertUserPreferences) => {
-    console.log("Onboarding completed:", data);
     try {
       await createPreferencesMutation.mutateAsync(data);
       setShowOnboarding(false);
@@ -203,7 +216,10 @@ export default function HomePage() {
       <OnboardingFlow
         isOpen={showOnboarding}
         onClose={() => setShowOnboarding(false)}
-        onComplete={handleOnboardingComplete}
+        onComplete={() => {
+          setShowOnboarding(false);
+          setShowBusinesses(true);
+        }}
       />
 
       {!showBusinesses ? (
@@ -298,46 +314,6 @@ export default function HomePage() {
                 onClearFilters={handleClearFilters}
               />
               
-              <Card>
-                <CardHeader>
-                  <CardTitle>Live Web Search</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      Search for fresh business listings from major platforms like BizBuySell, BizQuest, and FranchiseGator
-                    </p>
-                    <Button
-                      onClick={handleWebSearch}
-                      disabled={webSearchMutation.isPending || !isAuthenticated}
-                      className="w-full"
-                      data-testid="button-web-search"
-                    >
-                      <Globe className="h-4 w-4 mr-2" />
-                      {webSearchMutation.isPending ? "Searching..." : "Search Live Listings"}
-                    </Button>
-                    {!isAuthenticated && (
-                      <p className="text-xs text-muted-foreground">
-                        Please sign in to search live business listings
-                      </p>
-                    )}
-                    {webSearchMutation.data && (
-                      <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
-                        <p className="text-sm text-green-800 dark:text-green-200">
-                          Found {webSearchMutation.data.totalFound} new businesses from web sources!
-                        </p>
-                      </div>
-                    )}
-                    {webSearchMutation.error && (
-                      <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-md">
-                        <p className="text-sm text-red-800 dark:text-red-200">
-                          {webSearchMutation.error.message}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
 
               <Card>
                 <CardHeader>
@@ -363,7 +339,42 @@ export default function HomePage() {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1">
+            <div className="flex-1 space-y-6">
+              <StatsOverview stats={realStats} />
+              
+              {/* Live Search Button - Top Center */}
+              <div className="flex justify-center">
+                <Button
+                  onClick={handleWebSearch}
+                  disabled={webSearchMutation.isPending || !isAuthenticated}
+                  size="lg"
+                  data-testid="button-web-search-main"
+                >
+                  <Globe className="h-4 w-4 mr-2" />
+                  {webSearchMutation.isPending ? "Searching..." : "Live Search"}
+                </Button>
+              </div>
+              
+              {webSearchMutation.data && (
+                <div className="text-center">
+                  <div className="inline-flex items-center px-4 py-2 bg-green-50 dark:bg-green-900/20 rounded-md">
+                    <p className="text-sm text-green-800 dark:text-green-200">
+                      Found {webSearchMutation.data.totalFound} new businesses from web sources!
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {webSearchMutation.error && (
+                <div className="text-center">
+                  <div className="inline-flex items-center px-4 py-2 bg-red-50 dark:bg-red-900/20 rounded-md">
+                    <p className="text-sm text-red-800 dark:text-red-200">
+                      {webSearchMutation.error.message}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               <BusinessList
                 businesses={displayBusinesses}
                 loading={isLoading}

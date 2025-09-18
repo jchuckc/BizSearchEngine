@@ -69,7 +69,7 @@ export class WebBusinessScraperService {
   }
 
   private buildSearchQueries(preferences?: UserPreferences): string[] {
-    const baseQueries = [
+    let baseQueries = [
       "businesses for sale BizBuySell",
       "small businesses for sale BizQuest", 
       "franchise opportunities FranchiseGator",
@@ -82,28 +82,40 @@ export class WebBusinessScraperService {
       return baseQueries;
     }
 
+    // If location is specified, add location to ALL base queries
+    if (preferences.location) {
+      baseQueries = baseQueries.map(query => `${query} ${preferences.location}`);
+    }
+
     // Enhance queries with user preferences
     const enhancedQueries: string[] = [];
     
     // Add industry-specific searches
     if (preferences.industries && preferences.industries.length > 0) {
       preferences.industries.forEach(industry => {
-        enhancedQueries.push(`${industry} businesses for sale BizBuySell BizQuest`);
-        enhancedQueries.push(`${industry} franchise opportunities FranchiseGator`);
+        const industryQuery1 = `${industry} businesses for sale BizBuySell BizQuest`;
+        const industryQuery2 = `${industry} franchise opportunities FranchiseGator`;
+        
+        // Add location to industry queries if specified
+        if (preferences.location) {
+          enhancedQueries.push(`${industryQuery1} ${preferences.location}`);
+          enhancedQueries.push(`${industryQuery2} ${preferences.location}`);
+        } else {
+          enhancedQueries.push(industryQuery1);
+          enhancedQueries.push(industryQuery2);
+        }
       });
-    }
-
-    // Add location-based searches
-    if (preferences.location) {
-      enhancedQueries.push(`businesses for sale ${preferences.location} BizBuySell`);
-      enhancedQueries.push(`franchise opportunities ${preferences.location} FranchiseGator`);
     }
 
     // Add price range searches
     if (preferences.capitalRange && preferences.capitalRange.length === 2) {
       const [minPrice, maxPrice] = preferences.capitalRange;
       if (minPrice > 0 && maxPrice > minPrice) {
-        enhancedQueries.push(`businesses for sale $${minPrice} to $${maxPrice} BizBuySell BizQuest`);
+        let priceQuery = `businesses for sale $${minPrice} to $${maxPrice} BizBuySell BizQuest`;
+        if (preferences.location) {
+          priceQuery += ` ${preferences.location}`;
+        }
+        enhancedQueries.push(priceQuery);
       }
     }
 
@@ -134,43 +146,192 @@ export class WebBusinessScraperService {
   }
 
   private simulateWebSearchResults(query: string): string {
-    // Simulate comprehensive web search results for business listings
-    const sampleResults = `
+    // Define all available businesses
+    const allBusinesses = [
+      {
+        name: "TechFlow Solutions Inc.",
+        price: "$750,000",
+        location: "Austin, TX",
+        industry: "Technology Services",
+        revenue: "$1.2M",
+        cashFlow: "$280K",
+        employees: 8,
+        description: "Established IT consulting firm specializing in small business automation. Strong client base with recurring contracts.",
+        source: "BizBuySell.com/listing/techflow-solutions-austin-tx"
+      },
+      {
+        name: "NYC Digital Marketing Hub",
+        price: "$950,000",
+        location: "New York, NY",
+        industry: "Digital Marketing",
+        revenue: "$1.5M",
+        cashFlow: "$380K",
+        employees: 12,
+        description: "Premier digital marketing agency serving Fortune 500 clients in Manhattan. Established client base with long-term contracts.",
+        source: "BizBuySell.com/listing/nyc-digital-marketing-hub"
+      },
+      {
+        name: "Manhattan Tech Consulting",
+        price: "$1,200,000",
+        location: "New York, NY", 
+        industry: "Technology Services",
+        revenue: "$1.8M",
+        cashFlow: "$450K",
+        employees: 15,
+        description: "Premium technology consulting firm specializing in financial services sector. High-value clients and proven expertise.",
+        source: "BizQuest.com/new-york/tech-consulting-manhattan"
+      },
+      {
+        name: "Brooklyn Software Solutions",
+        price: "$680,000",
+        location: "New York, NY",
+        industry: "Technology Services", 
+        revenue: "$920K",
+        cashFlow: "$245K",
+        employees: 8,
+        description: "Custom software development company with diverse client portfolio. Strong technical team and ongoing projects.",
+        source: "BusinessBroker.net/software-company-brooklyn-ny"
+      },
+      {
+        name: "Green Valley Landscaping",
+        price: "$320,000",
+        location: "Denver, CO",
+        industry: "Landscaping Services",
+        revenue: "$480K",
+        cashFlow: "$145K",
+        employees: 12,
+        description: "Full-service commercial and residential landscaping company with established client relationships.",
+        source: "BizQuest.com/colorado/landscaping-business-denver"
+      },
+      {
+        name: "Downtown Coffee Roastery",
+        price: "$450,000",
+        location: "Portland, OR",
+        industry: "Food & Beverage",
+        revenue: "$650K",
+        cashFlow: "$180K",
+        employees: 8,
+        description: "Specialty coffee shop with premium roasting equipment and loyal customer base in high-traffic area.",
+        source: "FranchiseGator.com/coffee-business-portland-oregon"
+      },
+      {
+        name: "Elite Marketing Agency",
+        price: "$1,200,000",
+        location: "Miami, FL",
+        industry: "Digital Marketing",
+        revenue: "$1.8M",
+        cashFlow: "$420K",
+        employees: 15,
+        description: "Full-service digital marketing agency with Fortune 500 clients and proven track record.",
+        source: "BusinessBroker.net/marketing-agency-miami-florida"
+      },
+      {
+        name: "LA Tech Startup Incubator",
+        price: "$2,100,000",
+        location: "Los Angeles, CA",
+        industry: "Technology Services",
+        revenue: "$2.5M",
+        cashFlow: "$650K",
+        employees: 25,
+        description: "Technology incubator and consulting firm serving startups and established companies in Silicon Beach.",
+        source: "BizBuySell.com/california/tech-incubator-los-angeles"
+      },
+      {
+        name: "Hollywood Media Production",
+        price: "$1,800,000",
+        location: "Los Angeles, CA",
+        industry: "Entertainment",
+        revenue: "$2.2M",
+        cashFlow: "$540K",
+        employees: 18,
+        description: "Established media production company with industry connections and ongoing contracts with major studios.",
+        source: "BusinessBroker.net/media-production-hollywood-ca"
+      },
+      {
+        name: "Chicago Financial Advisory",
+        price: "$650,000",
+        location: "Chicago, IL",
+        industry: "Financial Services",
+        revenue: "$950K",
+        cashFlow: "$220K",
+        employees: 8,
+        description: "Established financial advisory firm serving small business owners and professionals in downtown Chicago.",
+        source: "BizBuySell.com/chicago/financial-advisory-firm"
+      },
+      {
+        name: "Midwest Manufacturing Solutions",
+        price: "$1,100,000",
+        location: "Chicago, IL",
+        industry: "Manufacturing",
+        revenue: "$1.6M",
+        cashFlow: "$380K",
+        employees: 22,
+        description: "Custom manufacturing and logistics company with established supplier relationships and growing client base.",
+        source: "BizQuest.com/illinois/manufacturing-chicago"
+      },
+      {
+        name: "Windy City Tech Services",
+        price: "$420,000",
+        location: "Chicago, IL",
+        industry: "Technology Services",
+        revenue: "$580K",
+        cashFlow: "$165K",
+        employees: 6,
+        description: "IT support and consulting firm specializing in small business technology solutions across the Chicago metro area.",
+        source: "BusinessBroker.net/tech-services-chicago-il"
+      }
+    ];
+
+    // Filter businesses based on location mentioned in query
+    let filteredBusinesses = allBusinesses;
+    
+    // Extract location from query if present
+    const locationRegex = /(New York|NYC|Manhattan|Brooklyn|Los Angeles|LA|California|Miami|Denver|Portland|Austin|Chicago|Boston|Seattle|Atlanta|Phoenix|Philadelphia|San Francisco|Dallas|Houston)/i;
+    const locationMatch = query.match(locationRegex);
+    
+    if (locationMatch) {
+      const searchLocation = locationMatch[0].toLowerCase();
+      filteredBusinesses = allBusinesses.filter(business => {
+        const businessLocation = business.location.toLowerCase();
+        const isMatch = (
+          businessLocation.includes(searchLocation) ||
+          // New York variations
+          (searchLocation.includes('new york') && (businessLocation.includes('new york') || businessLocation.includes('manhattan') || businessLocation.includes('brooklyn'))) ||
+          (searchLocation.includes('nyc') && businessLocation.includes('new york')) ||
+          // Los Angeles variations  
+          (searchLocation.includes('los angeles') && businessLocation.includes('los angeles')) ||
+          (searchLocation.includes('la') && businessLocation.includes('los angeles')) ||
+          // California variations
+          (searchLocation.includes('california') && businessLocation.includes('ca')) ||
+          // Chicago variations
+          (searchLocation.includes('chicago') && businessLocation.includes('chicago'))
+        );
+        return isMatch;
+      });
+    }
+
+    // If no specific location found or no matches, return a subset of all businesses
+    if (filteredBusinesses.length === 0) {
+      filteredBusinesses = allBusinesses.slice(0, 3);
+    }
+
+    // Limit to 3 results to simulate realistic search response
+    filteredBusinesses = filteredBusinesses.slice(0, 3);
+
+    const resultText = `
 Business Listing Search Results for "${query}":
 
-1. TechFlow Solutions Inc. - $750,000
-   Location: Austin, TX | Industry: Technology Services
-   Revenue: $1.2M annually | Cash Flow: $280K | Employees: 8
-   Description: Established IT consulting firm specializing in small business automation. Strong client base with recurring contracts.
-   Source: BizBuySell.com/listing/techflow-solutions-austin-tx
-
-2. Green Valley Landscaping - $320,000  
-   Location: Denver, CO | Industry: Landscaping Services
-   Revenue: $480K annually | Cash Flow: $145K | Employees: 12
-   Description: Full-service commercial and residential landscaping company with established client relationships.
-   Source: BizQuest.com/colorado/landscaping-business-denver
-
-3. Downtown Coffee Roastery - $450,000
-   Location: Portland, OR | Industry: Food & Beverage  
-   Revenue: $650K annually | Cash Flow: $180K | Employees: 8
-   Description: Specialty coffee shop with premium roasting equipment and loyal customer base in high-traffic area.
-   Source: FranchiseGator.com/coffee-business-portland-oregon
-
-4. MediTech Software Platform - $850,000
-   Location: California | Industry: Healthcare Technology
-   Revenue: $920K annually | Cash Flow: $310K | Employees: 6
-   Description: SaaS platform for medical practices with 200+ active subscribers and growing user base.
-   Source: BizBuySell.com/online-businesses/healthcare-software
-
-5. Elite Marketing Agency - $1,200,000
-   Location: Miami, FL | Industry: Digital Marketing
-   Revenue: $1.8M annually | Cash Flow: $420K | Employees: 15  
-   Description: Full-service digital marketing agency with Fortune 500 clients and proven track record.
-   Source: BusinessBroker.net/marketing-agency-miami-florida
+${filteredBusinesses.map((business, index) => `
+${index + 1}. ${business.name} - ${business.price}
+   Location: ${business.location} | Industry: ${business.industry}
+   Revenue: ${business.revenue} annually | Cash Flow: ${business.cashFlow} | Employees: ${business.employees}
+   Description: ${business.description}
+   Source: ${business.source}
+`).join('')}
 
 These represent active listings from major business-for-sale platforms with verified financial information and established operations.`;
 
-    return sampleResults;
+    return resultText;
   }
 
   private combineSearchResults(searchResults: any[]): string {

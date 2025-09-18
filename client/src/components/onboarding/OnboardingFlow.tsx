@@ -19,11 +19,16 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: OnboardingFlowPr
   const [step, setStep] = useState<OnboardingStep>("welcome");
 
   const handleAuthSuccess = () => {
-    setStep("preferences");
+    // Small delay to ensure auth state is updated
+    setTimeout(() => {
+      setStep("preferences");
+    }, 100);
   };
 
   const handlePreferencesComplete = () => {
-    setStep("complete");
+    // Skip the complete step and immediately finish onboarding
+    onComplete?.();
+    setStep("welcome"); // Reset for next time
   };
 
   const handleSkipPreferences = () => {

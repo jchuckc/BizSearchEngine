@@ -93,9 +93,10 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
           paybackPeriod: preferences.paybackPeriod
         })
       });
-
+      
       if (!response.ok) {
-        throw new Error("Failed to save preferences");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to save preferences");
       }
 
       // Invalidate preferences and businesses queries to refresh data
@@ -190,9 +191,10 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
                   <SelectValue placeholder="Select your risk tolerance" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="conservative">Conservative - Stable, established businesses</SelectItem>
-                  <SelectItem value="moderate">Moderate - Some growth potential acceptable</SelectItem>
-                  <SelectItem value="aggressive">Aggressive - High growth, higher risk acceptable</SelectItem>
+                  <SelectItem value="any">Any Risk Level</SelectItem>
+                  <SelectItem value="low">Low Risk - Stable, established businesses</SelectItem>
+                  <SelectItem value="medium">Medium Risk - Some growth potential acceptable</SelectItem>
+                  <SelectItem value="high">High Risk - High growth, higher risk acceptable</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -208,9 +210,10 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
                   <SelectValue placeholder="How involved do you want to be?" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="passive">Passive - Minimal involvement</SelectItem>
-                  <SelectItem value="active">Active - Day-to-day management</SelectItem>
-                  <SelectItem value="consulting">Consulting - Strategic oversight</SelectItem>
+                  <SelectItem value="any">Any Involvement Level</SelectItem>
+                  <SelectItem value="low">Low Touch (Semi-Absentee)</SelectItem>
+                  <SelectItem value="medium">Medium Touch (Managerial)</SelectItem>
+                  <SelectItem value="high">High Touch (Owner-Operator)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -226,14 +229,57 @@ export function PreferencesForm({ onComplete, onSkip }: PreferencesFormProps) {
                   <SelectValue placeholder="Where do you want to invest?" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="New York, NY">New York, NY</SelectItem>
-                  <SelectItem value="Los Angeles, CA">Los Angeles, CA</SelectItem>
-                  <SelectItem value="Chicago, IL">Chicago, IL</SelectItem>
-                  <SelectItem value="Houston, TX">Houston, TX</SelectItem>
+                  <SelectItem value="any">Any Location</SelectItem>
+                  <SelectItem value="Albuquerque, NM">Albuquerque, NM</SelectItem>
+                  <SelectItem value="Arlington, TX">Arlington, TX</SelectItem>
+                  <SelectItem value="Atlanta, GA">Atlanta, GA</SelectItem>
                   <SelectItem value="Austin, TX">Austin, TX</SelectItem>
+                  <SelectItem value="Baltimore, MD">Baltimore, MD</SelectItem>
+                  <SelectItem value="Boston, MA">Boston, MA</SelectItem>
+                  <SelectItem value="Charlotte, NC">Charlotte, NC</SelectItem>
+                  <SelectItem value="Chicago, IL">Chicago, IL</SelectItem>
+                  <SelectItem value="Colorado Springs, CO">Colorado Springs, CO</SelectItem>
+                  <SelectItem value="Columbus, OH">Columbus, OH</SelectItem>
+                  <SelectItem value="Dallas, TX">Dallas, TX</SelectItem>
                   <SelectItem value="Denver, CO">Denver, CO</SelectItem>
-                  <SelectItem value="Remote/Online">Remote/Online</SelectItem>
-                  <SelectItem value="Any">No preference</SelectItem>
+                  <SelectItem value="Detroit, MI">Detroit, MI</SelectItem>
+                  <SelectItem value="El Paso, TX">El Paso, TX</SelectItem>
+                  <SelectItem value="Fort Worth, TX">Fort Worth, TX</SelectItem>
+                  <SelectItem value="Fresno, CA">Fresno, CA</SelectItem>
+                  <SelectItem value="Houston, TX">Houston, TX</SelectItem>
+                  <SelectItem value="Indianapolis, IN">Indianapolis, IN</SelectItem>
+                  <SelectItem value="Jacksonville, FL">Jacksonville, FL</SelectItem>
+                  <SelectItem value="Kansas City, MO">Kansas City, MO</SelectItem>
+                  <SelectItem value="Las Vegas, NV">Las Vegas, NV</SelectItem>
+                  <SelectItem value="Long Beach, CA">Long Beach, CA</SelectItem>
+                  <SelectItem value="Los Angeles, CA">Los Angeles, CA</SelectItem>
+                  <SelectItem value="Louisville, KY">Louisville, KY</SelectItem>
+                  <SelectItem value="Memphis, TN">Memphis, TN</SelectItem>
+                  <SelectItem value="Mesa, AZ">Mesa, AZ</SelectItem>
+                  <SelectItem value="Miami, FL">Miami, FL</SelectItem>
+                  <SelectItem value="Milwaukee, WI">Milwaukee, WI</SelectItem>
+                  <SelectItem value="Minneapolis, MN">Minneapolis, MN</SelectItem>
+                  <SelectItem value="Nashville, TN">Nashville, TN</SelectItem>
+                  <SelectItem value="New Orleans, LA">New Orleans, LA</SelectItem>
+                  <SelectItem value="New York, NY">New York, NY</SelectItem>
+                  <SelectItem value="Oakland, CA">Oakland, CA</SelectItem>
+                  <SelectItem value="Oklahoma City, OK">Oklahoma City, OK</SelectItem>
+                  <SelectItem value="Omaha, NE">Omaha, NE</SelectItem>
+                  <SelectItem value="Philadelphia, PA">Philadelphia, PA</SelectItem>
+                  <SelectItem value="Phoenix, AZ">Phoenix, AZ</SelectItem>
+                  <SelectItem value="Portland, OR">Portland, OR</SelectItem>
+                  <SelectItem value="Raleigh, NC">Raleigh, NC</SelectItem>
+                  <SelectItem value="Sacramento, CA">Sacramento, CA</SelectItem>
+                  <SelectItem value="San Antonio, TX">San Antonio, TX</SelectItem>
+                  <SelectItem value="San Diego, CA">San Diego, CA</SelectItem>
+                  <SelectItem value="San Francisco, CA">San Francisco, CA</SelectItem>
+                  <SelectItem value="San Jose, CA">San Jose, CA</SelectItem>
+                  <SelectItem value="Seattle, WA">Seattle, WA</SelectItem>
+                  <SelectItem value="Tampa, FL">Tampa, FL</SelectItem>
+                  <SelectItem value="Tucson, AZ">Tucson, AZ</SelectItem>
+                  <SelectItem value="Tulsa, OK">Tulsa, OK</SelectItem>
+                  <SelectItem value="Virginia Beach, VA">Virginia Beach, VA</SelectItem>
+                  <SelectItem value="Washington, DC">Washington, DC</SelectItem>
                 </SelectContent>
               </Select>
             </div>

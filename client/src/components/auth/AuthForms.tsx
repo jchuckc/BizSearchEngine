@@ -17,8 +17,8 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
   const { toast } = useToast();
   
   const [loginData, setLoginData] = useState({
-    email: "",
-    password: "",
+    email: "test@example.com",
+    password: "password123",
   });
   
   const [signupData, setSignupData] = useState({

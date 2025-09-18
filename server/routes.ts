@@ -276,10 +276,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Merge user preferences with filter overrides
+      // Handle empty string location as explicit "no location filter" 
       const validFilterParams = Object.fromEntries(
-        Object.entries(filterParams).filter(([_, value]) => 
-          value !== undefined && value !== 'any' && (Array.isArray(value) ? value.length > 0 : true)
-        )
+        Object.entries(filterParams).filter(([key, value]) => {
+          // For location, empty string means "Any Location" - this should override user preference
+          if (key === 'location') {
+            return value !== undefined; // Include empty string for location
+          }
+          // For other fields, filter out undefined, 'any', and empty arrays
+          return value !== undefined && value !== 'any' && (Array.isArray(value) ? value.length > 0 : true);
+        })
       );
 
       const searchPreferences = preferences ? {
