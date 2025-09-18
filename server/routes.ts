@@ -264,8 +264,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userPrefs = await storage.getUserPreferences(userId);
       const preferences = userPrefs || undefined;
 
-      console.log("Starting web search for business listings...");
-      const searchResult = await webBusinessScraperService.searchBusinessListings(preferences);
+      // Extract filter parameters from query
+      const filterParams = {
+        priceRange: req.query.priceRange ? JSON.parse(req.query.priceRange as string) : undefined,
+        revenueRange: req.query.revenueRange ? JSON.parse(req.query.revenueRange as string) : undefined,
+        location: req.query.location as string || undefined,
+        industries: req.query.industries ? JSON.parse(req.query.industries as string) : undefined,
+        riskTolerance: req.query.riskTolerance as string || undefined,
+        involvement: req.query.involvement as string || undefined,
+        employees: req.query.employees as string || undefined
+      };
+
+      // Merge user preferences with filter overrides
+      const validFilterParams = Object.fromEntries(
+        Object.entries(filterParams).filter(([_, value]) => 
+          value !== undefined && value !== 'any' && (Array.isArray(value) ? value.length > 0 : true)
+        )
+      );
+
+      const searchPreferences = preferences ? {
+        ...preferences,
+        ...validFilterParams
+      } : validFilterParams;
+
+      console.log("Starting web search for business listings with filters...", searchPreferences);
+      const searchResult = await webBusinessScraperService.searchBusinessListings(searchPreferences);
       
       res.json({
         businesses: searchResult.businesses,

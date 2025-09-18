@@ -7,7 +7,7 @@ import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Building2, DollarSign, Star, ArrowRight, Globe } from "lucide-react";
-import { useBusinesses, useBusinessSearch, useRankedBusinesses } from "@/hooks/useBusinesses";
+// Removed unused imports as we now only use web search results
 import { useUserPreferences, useCreateUserPreferences } from "@/hooks/useUserPreferences";
 import { useWebBusinessSearch } from "@/hooks/useWebBusinessSearch";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,50 +45,6 @@ const mockStats = [
   }
 ];
 
-const mockBusinesses = [
-  {
-    id: "1",
-    name: "Downtown Coffee Roastery", 
-    description: "Established specialty coffee shop with loyal customer base and premium roasting equipment.",
-    location: "Portland, OR",
-    industry: "Food & Beverage",
-    askingPrice: 450000,
-    annualRevenue: 650000,
-    cashFlow: 180000,
-    ebitda: 165000,
-    employees: 8,
-    yearEstablished: 2018,
-    aiScore: 87
-  },
-  {
-    id: "2",
-    name: "Tech Solutions Inc",
-    description: "B2B software consulting firm specializing in small business automation and digital transformation.",
-    location: "Austin, TX", 
-    industry: "Technology",
-    askingPrice: 850000,
-    annualRevenue: 1200000,
-    cashFlow: 320000,
-    ebitda: 290000,
-    employees: 15,
-    yearEstablished: 2016,
-    aiScore: 92
-  },
-  {
-    id: "3", 
-    name: "Green Valley Landscaping",
-    description: "Full-service commercial and residential landscaping company with established client base.",
-    location: "Denver, CO",
-    industry: "Professional Services", 
-    askingPrice: 320000,
-    annualRevenue: 480000,
-    cashFlow: 145000,
-    ebitda: 132000,
-    employees: 12,
-    yearEstablished: 2015,
-    aiScore: 78
-  }
-];
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
@@ -101,32 +57,18 @@ export default function HomePage() {
     revenueRange: [100000, 10000000] as [number, number],
     location: "",
     industry: [] as string[],
-    riskTolerance: "",
-    involvement: "",
-    employees: ""
+    riskTolerance: "any",
+    involvement: "any",
+    employees: "any"
   });
 
   // API hooks - all must be called unconditionally at the top level
   const { data: userPreferencesData } = useUserPreferences();
   const createPreferencesMutation = useCreateUserPreferences();
   const webSearchMutation = useWebBusinessSearch();
-  
-  // Compute derived state before using in hooks
-  const hasPreferences = !!(isAuthenticated && userPreferencesData?.preferences);
-  const rankEnabled = isAuthenticated && hasPreferences && showBusinesses;
-  
-  const { data: businessesData, isLoading: businessesLoading, refetch: refetchBusinesses } = useBusinesses({
-    limit: showBusinesses ? 20 : 6, // Show 6 featured on home, 20 in search results
-    ...filters
-  });
-  const { data: searchData, isLoading: searchLoading, refetch: refetchSearch } = useBusinessSearch(
-    searchQuery, 
-    !!searchQuery && searchQuery.length >= 2
-  );
-  const { data: rankedBusinessesData, isLoading: rankedLoading, refetch: refetchRanked } = useRankedBusinesses(20, rankEnabled);
 
-  // Determine which data to show - prioritize ranked businesses for authenticated users with preferences
-  const useRankedResults = hasPreferences && !searchQuery && showBusinesses;
+  // Only show web search results
+  const hasWebSearchResults = webSearchMutation.data?.businesses && webSearchMutation.data.businesses.length > 0;
   
   // Helper function to create stable IDs for web search results
   const createStableWebId = (business: any): string => {
@@ -137,51 +79,45 @@ export default function HomePage() {
     return `web-${business.sourceSite}-${business.name.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 30)}`;
   };
 
-  const displayBusinesses = searchQuery && searchData 
-    ? searchData.businesses 
-    : showWebResults && webSearchMutation.data?.businesses && webSearchMutation.data.businesses.length > 0
-      ? webSearchMutation.data.businesses.map(wb => ({
-          id: createStableWebId(wb),
-          name: wb.name,
-          description: wb.description,
-          location: wb.location,
-          industry: wb.industry,
-          askingPrice: wb.askingPrice,
-          annualRevenue: wb.annualRevenue,
-          cashFlow: wb.cashFlow,
-          ebitda: wb.ebitda,
-          employees: wb.employees,
-          yearEstablished: wb.yearEstablished,
-          aiScore: wb.ranking || 0,
-          sourceUrl: wb.sourceUrl,
-          sourceSite: wb.sourceSite
-        }))
-      : (useRankedResults && rankedBusinessesData?.businesses && rankedBusinessesData.businesses.length > 0)
-        ? rankedBusinessesData.businesses.map(rb => ({ ...rb.business, aiScore: rb.score }))
-        : businessesData?.businesses || [];
+  const displayBusinesses = hasWebSearchResults
+    ? webSearchMutation.data!.businesses.map(wb => ({
+        id: createStableWebId(wb),
+        name: wb.name,
+        description: wb.description,
+        location: wb.location,
+        industry: wb.industry,
+        askingPrice: wb.askingPrice,
+        annualRevenue: wb.annualRevenue,
+        cashFlow: wb.cashFlow,
+        ebitda: wb.ebitda,
+        employees: wb.employees,
+        yearEstablished: wb.yearEstablished,
+        aiScore: wb.ranking || 0,
+        sourceUrl: wb.sourceUrl || '',
+        sourceSite: wb.sourceSite || '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sellerInfo: null,
+        businessDetails: null,
+        isActive: true
+      }))
+    : [];
   
-  const isLoading = searchQuery ? searchLoading : (showWebResults && webSearchMutation.isPending) ? true : (useRankedResults ? rankedLoading : businessesLoading);
+  const isLoading = webSearchMutation.isPending;
 
-  // Refresh handler - refetches the appropriate data based on what's currently displayed
+  // Refresh handler - triggers a new web search
   const handleRefresh = () => {
-    if (searchQuery && searchQuery.length >= 2) {
-      // Refresh search results
-      refetchSearch();
-    } else if (useRankedResults) {
-      // Refresh ranked businesses
-      refetchRanked();
-    } else {
-      // Refresh regular businesses
-      refetchBusinesses();
+    if (hasWebSearchResults) {
+      handleWebSearch();
     }
   };
 
-  // Calculate stats from real data
+  // Calculate stats from web search data
   const realStats = [
     {
-      title: "Total Businesses",
-      value: businessesData?.count?.toString() || "0",
-      change: "+12% from last month",
+      title: "Live Listings Found",
+      value: displayBusinesses.length.toString(),
+      change: "From web search",
       trend: "up" as const,
       icon: Building2
     },
@@ -190,21 +126,21 @@ export default function HomePage() {
       value: displayBusinesses.length > 0 
         ? `$${Math.round(displayBusinesses.reduce((sum, b) => sum + b.askingPrice, 0) / displayBusinesses.length / 1000)}K`
         : "$0",
-      change: "+5% from last month",
+      change: "Current listings",
       trend: "up" as const,
       icon: DollarSign
     },
     {
       title: "AI-Ranked Matches",
-      value: rankedBusinessesData?.count?.toString() || "0", 
-      change: "+23% from last month",
+      value: displayBusinesses.filter(b => b.aiScore >= 80).length.toString(), 
+      change: "High compatibility",
       trend: "up" as const,
       icon: Star
     },
     {
-      title: "Market Growth",
-      value: "8.2%",
-      change: "+2.1% from last month", 
+      title: "Live Search Active",
+      value: hasWebSearchResults ? "Yes" : "No",
+      change: "Real-time data", 
       trend: "up" as const,
       icon: TrendingUp
     }
@@ -217,6 +153,7 @@ export default function HomePage() {
   };
 
   const handleGetStarted = () => {
+    console.log("Get Started clicked, isAuthenticated:", isAuthenticated, "userPreferences:", userPreferencesData?.preferences);
     // Always show onboarding for non-authenticated users or users without preferences
     if (!isAuthenticated || !userPreferencesData?.preferences) {
       setShowOnboarding(true);
@@ -245,16 +182,16 @@ export default function HomePage() {
       revenueRange: [100000, 10000000],
       location: "",
       industry: [],
-      riskTolerance: "",
-      involvement: "",
-      employees: ""
+      riskTolerance: "any",
+      involvement: "any",
+      employees: "any"
     });
   };
 
   const handleWebSearch = async () => {
     try {
       setShowWebResults(true);
-      await webSearchMutation.mutateAsync();
+      await webSearchMutation.mutateAsync(filters);
     } catch (error) {
       console.error("Web search failed:", error);
       setShowWebResults(false);
@@ -266,10 +203,7 @@ export default function HomePage() {
       <OnboardingFlow
         isOpen={showOnboarding}
         onClose={() => setShowOnboarding(false)}
-        onComplete={() => {
-          setShowOnboarding(false);
-          setShowBusinesses(true);
-        }}
+        onComplete={handleOnboardingComplete}
       />
 
       {!showBusinesses ? (
@@ -289,81 +223,22 @@ export default function HomePage() {
               <StatsOverview stats={realStats} />
             </div>
 
-            {/* Featured Businesses */}
+            {/* Live Search Prompt */}
             <div className="mb-16">
-              <div className="flex justify-between items-center mb-8">
-                <div>
-                  <h2 className="text-3xl font-bold mb-4">Featured Opportunities</h2>
-                  <p className="text-muted-foreground">
-                    Hand-picked businesses with high investment potential
-                  </p>
-                </div>
+              <div className="text-center">
+                <h2 className="text-3xl font-bold mb-4">Discover Live Business Opportunities</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+                  Search for the latest business listings from major platforms with AI-powered ranking based on your preferences
+                </p>
                 <Button
-                  onClick={() => setShowBusinesses(true)}
-                  data-testid="button-view-all-businesses"
+                  size="lg"
+                  onClick={handleGetStarted}
+                  data-testid="button-start-search"
                 >
-                  View All Businesses
+                  Start Live Search
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
-              {isLoading ? (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {[...Array(3)].map((_, i) => (
-                    <Card key={i} className="animate-pulse">
-                      <CardHeader>
-                        <div className="h-6 bg-muted rounded"></div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="h-4 bg-muted rounded"></div>
-                          <div className="h-4 bg-muted rounded"></div>
-                          <div className="h-8 bg-muted rounded"></div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {displayBusinesses.slice(0, 3).map((business) => (
-                    <Card key={business.id} className="hover-elevate" data-testid={`card-featured-${business.id}`}>
-                      <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                          <span>{business.name}</span>
-                          <span className="text-primary font-bold">AI</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <p className="text-sm text-muted-foreground">{business.description}</p>
-                          <div className="flex justify-between text-sm">
-                            <span>Price:</span>
-                            <span className="font-semibold">
-                              ${business.askingPrice.toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Revenue:</span>
-                            <span>${business.annualRevenue.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Location:</span>
-                            <span>{business.location}</span>
-                          </div>
-                          <Button
-                            size="sm"
-                            className="w-full mt-4"
-                            onClick={() => console.log(`View ${business.id}`)}
-                            data-testid={`button-view-featured-${business.id}`}
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* How It Works */}

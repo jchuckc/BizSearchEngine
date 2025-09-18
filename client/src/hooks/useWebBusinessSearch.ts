@@ -34,9 +34,32 @@ interface WebSearchResponse {
 export function useWebBusinessSearch() {
   const { toast } = useToast();
 
-  return useMutation({
-    mutationFn: async (): Promise<WebSearchResponse> => {
-      const response = await apiRequest('GET', '/api/businesses/web-search');
+  return useMutation<WebSearchResponse, Error, any>({
+    mutationFn: async (filters?: any): Promise<WebSearchResponse> => {
+      const params = new URLSearchParams();
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value && value !== '' && value !== 'any' && (Array.isArray(value) ? value.length > 0 : true)) {
+            // Map 'industry' to 'industries' for server compatibility
+            const serverKey = key === 'industry' ? 'industries' : key;
+            
+            if (Array.isArray(value)) {
+              // Filter out 'Any' from industry arrays
+              const filteredValue = key === 'industry' ? value.filter(v => v !== 'Any') : value;
+              if (filteredValue.length > 0) {
+                params.append(serverKey, JSON.stringify(filteredValue));
+              }
+            } else if (typeof value === 'object' && key.includes('Range')) {
+              params.append(serverKey, JSON.stringify(value));
+            } else {
+              params.append(serverKey, String(value));
+            }
+          }
+        });
+      }
+      
+      const url = `/api/businesses/web-search${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await apiRequest('GET', url);
       return response.json();
     },
     onSuccess: (data) => {

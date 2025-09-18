@@ -41,7 +41,7 @@ export class WebBusinessScraperService {
     "BusinessBroker.net"
   ];
 
-  async searchBusinessListings(preferences?: UserPreferences): Promise<WebScrapingResult> {
+  async searchBusinessListings(preferences?: UserPreferences | any): Promise<WebScrapingResult> {
     try {
       // Build search queries based on user preferences
       const searchQueries = this.buildSearchQueries(preferences);

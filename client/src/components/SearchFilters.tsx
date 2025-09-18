@@ -5,8 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { X, Filter, RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { X, Filter, RotateCcw, ChevronDown } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 interface FilterState {
   priceRange: [number, number];
@@ -25,6 +27,7 @@ interface SearchFiltersProps {
 }
 
 const industries = [
+  "Any",
   "Food & Beverage",
   "Retail",
   "Technology",
@@ -38,26 +41,85 @@ const industries = [
 ];
 
 const riskLevels = [
+  { value: "any", label: "Any Risk Level" },
   { value: "low", label: "Low Risk" },
   { value: "medium", label: "Medium Risk" },
   { value: "high", label: "High Risk" }
 ];
 
 const involvementLevels = [
+  { value: "any", label: "Any Involvement Level" },
   { value: "low", label: "Low Touch (Semi-Absentee)" },
   { value: "medium", label: "Medium Touch (Managerial)" },
   { value: "high", label: "High Touch (Owner-Operator)" }
 ];
 
 const employeeSizes = [
+  { value: "any", label: "Any Size" },
   { value: "1-5", label: "1-5 employees" },
   { value: "6-15", label: "6-15 employees" },
   { value: "16-50", label: "16-50 employees" },
   { value: "50+", label: "50+ employees" }
 ];
 
+const majorUSCities = [
+  "Any Location",
+  "New York, NY",
+  "Los Angeles, CA", 
+  "Chicago, IL",
+  "Houston, TX",
+  "Phoenix, AZ",
+  "Philadelphia, PA",
+  "San Antonio, TX",
+  "San Diego, CA",
+  "Dallas, TX",
+  "San Jose, CA",
+  "Austin, TX",
+  "Jacksonville, FL",
+  "Fort Worth, TX",
+  "Columbus, OH",
+  "Charlotte, NC",
+  "San Francisco, CA",
+  "Indianapolis, IN",
+  "Seattle, WA",
+  "Denver, CO",
+  "Washington, DC",
+  "Boston, MA",
+  "El Paso, TX",
+  "Nashville, TN",
+  "Detroit, MI",
+  "Oklahoma City, OK",
+  "Portland, OR",
+  "Las Vegas, NV",
+  "Memphis, TN",
+  "Louisville, KY",
+  "Baltimore, MD",
+  "Milwaukee, WI",
+  "Albuquerque, NM",
+  "Tucson, AZ",
+  "Fresno, CA",
+  "Mesa, AZ",
+  "Sacramento, CA",
+  "Atlanta, GA",
+  "Kansas City, MO",
+  "Colorado Springs, CO",
+  "Miami, FL",
+  "Raleigh, NC",
+  "Omaha, NE",
+  "Long Beach, CA",
+  "Virginia Beach, VA",
+  "Oakland, CA",
+  "Minneapolis, MN",
+  "Tulsa, OK",
+  "Tampa, FL",
+  "Arlington, TX",
+  "New Orleans, LA"
+];
+
 export function SearchFilters({ filters, onFiltersChange, onClearFilters }: SearchFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [locationSearch, setLocationSearch] = useState("");
 
   const handlePriceRangeChange = (value: number[]) => {
     onFiltersChange({ ...filters, priceRange: [value[0], value[1]] });
@@ -68,8 +130,17 @@ export function SearchFilters({ filters, onFiltersChange, onClearFilters }: Sear
   };
 
   const handleLocationChange = (value: string) => {
-    onFiltersChange({ ...filters, location: value });
+    onFiltersChange({ ...filters, location: value === "Any Location" ? "" : value });
+    setLocationOpen(false);
+    setLocationSearch("");
   };
+
+  const filteredCities = useMemo(() => {
+    if (!locationSearch) return majorUSCities;
+    return majorUSCities.filter(city => 
+      city.toLowerCase().includes(locationSearch.toLowerCase())
+    );
+  }, [locationSearch]);
 
   const handleIndustryToggle = (industry: string) => {
     const newIndustries = filters.industry.includes(industry)
@@ -126,14 +197,46 @@ export function SearchFilters({ filters, onFiltersChange, onClearFilters }: Sear
         <CardContent className="space-y-6">
           {/* Location */}
           <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              placeholder="City, State"
-              value={filters.location}
-              onChange={(e) => handleLocationChange(e.target.value)}
-              data-testid="input-location"
-            />
+            <Label>Location</Label>
+            <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={locationOpen}
+                  className="w-full justify-between"
+                  data-testid="button-location-select"
+                >
+                  {filters.location || "Any Location"}
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput
+                    placeholder="Search cities..."
+                    value={locationSearch}
+                    onValueChange={setLocationSearch}
+                    data-testid="input-location-search"
+                  />
+                  <CommandList>
+                    <CommandEmpty>No cities found.</CommandEmpty>
+                    <CommandGroup>
+                      {filteredCities.map((city) => (
+                        <CommandItem
+                          key={city}
+                          value={city}
+                          onSelect={handleLocationChange}
+                          data-testid={`option-location-${city.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`}
+                        >
+                          {city}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Price Range */}
