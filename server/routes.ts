@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { z } from "zod";
 import { storage } from "./storage";
 import { businessRankingService } from "./services/businessRanking";
+import { webBusinessScraperService } from "./services/webBusinessScraper";
 import { AuthUtils } from "./auth";
 import { 
   insertUserPreferencesSchema, 
@@ -248,6 +249,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching ranked businesses:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Web scraping endpoint for live business listings
+  app.get("/api/businesses/web-search", async (req, res) => {
+    try {
+      const userId = (req as any).session?.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required for web search" });
+      }
+      
+      // Get user preferences for authenticated user
+      const userPrefs = await storage.getUserPreferences(userId);
+      const preferences = userPrefs || undefined;
+
+      console.log("Starting web search for business listings...");
+      const searchResult = await webBusinessScraperService.searchBusinessListings(preferences);
+      
+      res.json({
+        businesses: searchResult.businesses,
+        totalFound: searchResult.totalFound,
+        searchSummary: searchResult.searchSummary,
+        source: "web-scraping"
+      });
+    } catch (error) {
+      console.error("Error in web business search:", error);
+      res.status(500).json({ error: "Failed to search web sources for businesses" });
     }
   });
 

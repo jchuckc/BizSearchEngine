@@ -6,9 +6,10 @@ import { StatsOverview } from "@/components/StatsOverview";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Building2, DollarSign, Star, ArrowRight } from "lucide-react";
+import { TrendingUp, Building2, DollarSign, Star, ArrowRight, Globe } from "lucide-react";
 import { useBusinesses, useBusinessSearch, useRankedBusinesses } from "@/hooks/useBusinesses";
 import { useUserPreferences, useCreateUserPreferences } from "@/hooks/useUserPreferences";
+import { useWebBusinessSearch } from "@/hooks/useWebBusinessSearch";
 import { useAuth } from "@/contexts/AuthContext";
 import { type InsertUserPreferences } from "@shared/schema";
 
@@ -94,6 +95,7 @@ export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showBusinesses, setShowBusinesses] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showWebResults, setShowWebResults] = useState(false);
   const [filters, setFilters] = useState({
     priceRange: [50000, 5000000] as [number, number],
     revenueRange: [100000, 10000000] as [number, number],
@@ -104,9 +106,15 @@ export default function HomePage() {
     employees: ""
   });
 
-  // API hooks
+  // API hooks - all must be called unconditionally at the top level
   const { data: userPreferencesData } = useUserPreferences();
   const createPreferencesMutation = useCreateUserPreferences();
+  const webSearchMutation = useWebBusinessSearch();
+  
+  // Compute derived state before using in hooks
+  const hasPreferences = !!(isAuthenticated && userPreferencesData?.preferences);
+  const rankEnabled = isAuthenticated && hasPreferences && showBusinesses;
+  
   const { data: businessesData, isLoading: businessesLoading, refetch: refetchBusinesses } = useBusinesses({
     limit: showBusinesses ? 20 : 6, // Show 6 featured on home, 20 in search results
     ...filters
@@ -115,19 +123,44 @@ export default function HomePage() {
     searchQuery, 
     !!searchQuery && searchQuery.length >= 2
   );
-  const { data: rankedBusinessesData, isLoading: rankedLoading, refetch: refetchRanked } = useRankedBusinesses(20);
+  const { data: rankedBusinessesData, isLoading: rankedLoading, refetch: refetchRanked } = useRankedBusinesses(20, rankEnabled);
 
   // Determine which data to show - prioritize ranked businesses for authenticated users with preferences
-  const hasPreferences = isAuthenticated && userPreferencesData?.preferences;
   const useRankedResults = hasPreferences && !searchQuery && showBusinesses;
   
+  // Helper function to create stable IDs for web search results
+  const createStableWebId = (business: any): string => {
+    if (business.sourceUrl) {
+      // Use a simple hash of the source URL for consistent ID
+      return `web-${business.sourceUrl.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 50)}`;
+    }
+    return `web-${business.sourceSite}-${business.name.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 30)}`;
+  };
+
   const displayBusinesses = searchQuery && searchData 
     ? searchData.businesses 
-    : (useRankedResults && rankedBusinessesData?.businesses && rankedBusinessesData.businesses.length > 0)
-      ? rankedBusinessesData.businesses.map(rb => ({ ...rb.business, aiScore: rb.score }))
-      : businessesData?.businesses || [];
+    : showWebResults && webSearchMutation.data?.businesses && webSearchMutation.data.businesses.length > 0
+      ? webSearchMutation.data.businesses.map(wb => ({
+          id: createStableWebId(wb),
+          name: wb.name,
+          description: wb.description,
+          location: wb.location,
+          industry: wb.industry,
+          askingPrice: wb.askingPrice,
+          annualRevenue: wb.annualRevenue,
+          cashFlow: wb.cashFlow,
+          ebitda: wb.ebitda,
+          employees: wb.employees,
+          yearEstablished: wb.yearEstablished,
+          aiScore: wb.ranking || 0,
+          sourceUrl: wb.sourceUrl,
+          sourceSite: wb.sourceSite
+        }))
+      : (useRankedResults && rankedBusinessesData?.businesses && rankedBusinessesData.businesses.length > 0)
+        ? rankedBusinessesData.businesses.map(rb => ({ ...rb.business, aiScore: rb.score }))
+        : businessesData?.businesses || [];
   
-  const isLoading = searchQuery ? searchLoading : (useRankedResults ? rankedLoading : businessesLoading);
+  const isLoading = searchQuery ? searchLoading : (showWebResults && webSearchMutation.isPending) ? true : (useRankedResults ? rankedLoading : businessesLoading);
 
   // Refresh handler - refetches the appropriate data based on what's currently displayed
   const handleRefresh = () => {
@@ -216,6 +249,16 @@ export default function HomePage() {
       involvement: "",
       employees: ""
     });
+  };
+
+  const handleWebSearch = async () => {
+    try {
+      setShowWebResults(true);
+      await webSearchMutation.mutateAsync();
+    } catch (error) {
+      console.error("Web search failed:", error);
+      setShowWebResults(false);
+    }
   };
 
   return (
@@ -380,6 +423,47 @@ export default function HomePage() {
                 onClearFilters={handleClearFilters}
               />
               
+              <Card>
+                <CardHeader>
+                  <CardTitle>Live Web Search</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Search for fresh business listings from major platforms like BizBuySell, BizQuest, and FranchiseGator
+                    </p>
+                    <Button
+                      onClick={handleWebSearch}
+                      disabled={webSearchMutation.isPending || !isAuthenticated}
+                      className="w-full"
+                      data-testid="button-web-search"
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      {webSearchMutation.isPending ? "Searching..." : "Search Live Listings"}
+                    </Button>
+                    {!isAuthenticated && (
+                      <p className="text-xs text-muted-foreground">
+                        Please sign in to search live business listings
+                      </p>
+                    )}
+                    {webSearchMutation.data && (
+                      <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
+                        <p className="text-sm text-green-800 dark:text-green-200">
+                          Found {webSearchMutation.data.totalFound} new businesses from web sources!
+                        </p>
+                      </div>
+                    )}
+                    {webSearchMutation.error && (
+                      <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-md">
+                        <p className="text-sm text-red-800 dark:text-red-200">
+                          {webSearchMutation.error.message}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Market Insights</CardTitle>

@@ -95,6 +95,8 @@ export function useBusinessSearch(query: string, enabled: boolean = true) {
 
 // Hook for fetching a single business
 export function useBusiness(id: string) {
+  const isWebResult = id?.startsWith('web-');
+  
   return useQuery({
     queryKey: ['businesses', id],
     queryFn: async (): Promise<{ business: Business; score?: BusinessScore }> => {
@@ -104,12 +106,13 @@ export function useBusiness(id: string) {
       }
       return response.json();
     },
-    enabled: !!id,
+    enabled: !!id && !isWebResult, // Skip network fetch for web search results
+    staleTime: isWebResult ? Infinity : undefined, // Web results use cached data only
   });
 }
 
 // Hook for fetching ranked businesses for the authenticated user
-export function useRankedBusinesses(limit: number = 20) {
+export function useRankedBusinesses(limit: number = 20, enabled: boolean = true) {
   return useQuery({
     queryKey: ['businesses', 'ranked', limit],
     queryFn: async (): Promise<RankedBusinessResponse> => {
@@ -122,6 +125,7 @@ export function useRankedBusinesses(limit: number = 20) {
       }
       return response.json();
     },
+    enabled,
     staleTime: 10 * 60 * 1000, // 10 minutes
     retry: (failureCount, error) => {
       // Don't retry auth errors
