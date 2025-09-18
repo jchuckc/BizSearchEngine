@@ -55,14 +55,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Email and password required" });
       }
       
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ error: "Invalid credentials" });
-      }
+      // Demo mode: accept any credentials and auto-create user if needed
+      let user = await storage.getUserByEmail(email);
       
-      const isValidPassword = await AuthUtils.comparePassword(password, user.password);
-      if (!isValidPassword) {
-        return res.status(401).json({ error: "Invalid credentials" });
+      if (!user) {
+        // Auto-create user for demo purposes
+        const demoUsername = email.split('@')[0] || 'demouser';
+        const hashedPassword = await AuthUtils.hashPassword(password);
+        
+        user = await storage.createUser({
+          username: demoUsername,
+          email: email,
+          password: hashedPassword
+        });
       }
       
       // Store user ID in session
