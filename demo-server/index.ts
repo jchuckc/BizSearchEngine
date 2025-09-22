@@ -12,14 +12,14 @@ app.use(express.urlencoded({ extended: false }));
 // CORS configuration for demo deployment
 app.use((req, res, next) => {
   const allowedOrigins = [
-    'http://localhost:5000',
+    'http://localhost:5001',
     'http://localhost:3000',
     'https://yourusername.github.io', // Update with actual GitHub username
-    'https://localhost:5000'
+    'https://localhost:5001'
   ];
   
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+  if (origin && allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   
@@ -91,7 +91,7 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  const port = Number(process.env.PORT) || 5000;
+  const port = Number(process.env.PORT) || 5001;
   server.listen(port, "0.0.0.0", () => {
     log(`Demo server running on http://0.0.0.0:${port}`);
     log(`Demo mode: No external APIs required`);

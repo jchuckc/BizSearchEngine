@@ -5,8 +5,9 @@ export async function setupVite(app: Express) {
   const vite = await (await import("vite")).createServer({
     server: { middlewareMode: true },
     appType: "custom",
-    root: process.cwd(),
-    publicDir: "client/public"
+    root: "demo-client",
+    configFile: "demo-vite.config.ts",
+    publicDir: "demo-client/public"
   });
 
   app.use(vite.ssrFixStacktrace);
