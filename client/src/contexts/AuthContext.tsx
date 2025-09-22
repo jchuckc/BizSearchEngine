@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "@shared/schema";
-import { queryClient } from "../lib/queryClient";
 
 interface AuthContextType {
   user: User | null;
@@ -44,12 +43,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (_email: string, _password: string) => {
     // Demo mode: login is automatic - just check auth
     await checkAuthStatus();
   };
 
-  const signup = async (email: string, username: string, password: string) => {
+  const signup = async (_email: string, _username: string, _password: string) => {
     // Demo mode: signup is not needed - just check auth
     await checkAuthStatus();
   };
