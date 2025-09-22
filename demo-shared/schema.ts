@@ -36,6 +36,13 @@ export interface User {
   preferences?: UserPreferences;
 }
 
+export interface DemoUser {
+  id: string;
+  username: string;
+  email: string;
+  preferences: UserPreferences;
+}
+
 export interface UserPreferences {
   budgetRange: {
     min: number;
