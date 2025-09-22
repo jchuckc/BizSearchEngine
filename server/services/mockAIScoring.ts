@@ -1,40 +1,161 @@
-// Mock AI scoring for demo purposes - no OpenAI API required
-export function generateMockCompatibilityScore(business: any, userPreferences: any): {
-  compatibilityScore: number;
-  rankingExplanation: string;
+// Mock AI scoring service - no OpenAI API required
+import { Business, UserPreferences, BusinessScore } from "../../shared/schema.js";
+
+export function generateMockCompatibilityScore(
+  business: Business, 
+  userPreferences: UserPreferences
+): { 
+  compatibilityScore: number; 
+  rankingExplanation: string; 
 } {
-  // Generate deterministic but realistic scores based on business data
-  const hash = business.name.length + business.industry.length + (business.askingPrice || 0);
-  const baseScore = 65 + ((hash % 30) + 5); // Scores between 70-99
+  let score = 65; // Base score
+  const factors: string[] = [];
   
-  const factors = [];
-  
-  // Industry match simulation
-  if (userPreferences?.preferredIndustries?.includes(business.industry)) {
+  // Industry match (up to +20 points)
+  if (userPreferences.preferredIndustries.includes(business.industry)) {
+    score += 15;
     factors.push(`Strong industry match (${business.industry})`);
+  } else {
+    score += 5;
+    factors.push(`Industry alignment potential`);
   }
   
-  // Location match simulation  
-  if (userPreferences?.preferredLocations?.includes(business.location)) {
+  // Location match (up to +15 points)
+  const businessState = business.location.split(', ')[1];
+  const hasLocationMatch = userPreferences.preferredLocations.some(loc => 
+    loc.includes(businessState) || business.location === loc
+  );
+  if (hasLocationMatch) {
+    score += 12;
     factors.push(`Preferred location (${business.location})`);
+  } else {
+    score += 3;
+    factors.push(`Market expansion opportunity`);
   }
   
-  // Price range simulation
-  if (business.askingPrice && userPreferences?.budgetRange) {
-    factors.push('Within your budget range');
+  // Budget alignment (up to +15 points)
+  const { min, max } = userPreferences.budgetRange;
+  if (business.askingPrice >= min && business.askingPrice <= max) {
+    score += 12;
+    factors.push(`Within your budget range ($${(min/1000).toFixed(0)}K-$${(max/1000).toFixed(0)}K)`);
+  } else if (business.askingPrice < min) {
+    score += 8;
+    factors.push(`Below budget - potential value opportunity`);
+  } else {
+    score += 3;
+    factors.push(`Above budget but strong fundamentals`);
   }
   
-  // Size match simulation
-  if (business.employees && userPreferences?.businessSize) {
-    factors.push(`${userPreferences.businessSize} business size match`);
+  // Business size assessment (up to +10 points)
+  let sizeMatch = false;
+  if (userPreferences.businessSize === 'small' && business.employees <= 10) {
+    sizeMatch = true;
+  } else if (userPreferences.businessSize === 'medium' && business.employees > 10 && business.employees <= 50) {
+    sizeMatch = true;
+  } else if (userPreferences.businessSize === 'large' && business.employees > 50) {
+    sizeMatch = true;
   }
   
-  const explanation = factors.length > 0 
-    ? `This business scores ${baseScore}/100 based on: ${factors.join(', ')}. Demo AI analysis shows good alignment with your investment criteria.`
-    : `This business scores ${baseScore}/100. Demo AI analysis indicates moderate compatibility with your preferences.`;
+  if (sizeMatch) {
+    score += 8;
+    factors.push(`${userPreferences.businessSize} business size preference match`);
+  } else {
+    score += 4;
+    factors.push(`Business size offers learning opportunities`);
+  }
+  
+  // Financial health indicators (up to +10 points)
+  const revenueMultiple = business.askingPrice / business.annualRevenue;
+  const cashFlowMargin = business.cashFlow / business.annualRevenue;
+  
+  if (revenueMultiple < 1.5 && cashFlowMargin > 0.2) {
+    score += 8;
+    factors.push(`Strong financial metrics and valuation`);
+  } else if (revenueMultiple < 2.0 && cashFlowMargin > 0.15) {
+    score += 6;
+    factors.push(`Good financial health indicators`);
+  } else {
+    score += 3;
+    factors.push(`Adequate financial foundation`);
+  }
+  
+  // Risk tolerance alignment (up to +5 points)
+  const businessAge = new Date().getFullYear() - business.yearEstablished;
+  if (userPreferences.riskTolerance === 'conservative' && businessAge >= 5) {
+    score += 4;
+    factors.push(`Established business aligns with conservative risk preference`);
+  } else if (userPreferences.riskTolerance === 'moderate' && businessAge >= 3) {
+    score += 4;
+    factors.push(`Business maturity suits moderate risk tolerance`);
+  } else if (userPreferences.riskTolerance === 'aggressive') {
+    score += 4;
+    factors.push(`Growth potential matches aggressive investment approach`);
+  } else {
+    score += 2;
+    factors.push(`Business profile suitable for portfolio diversification`);
+  }
+  
+  // Involvement level considerations (up to +5 points)
+  if (userPreferences.involvementLevel === 'hands-off' && business.employees >= 10) {
+    score += 4;
+    factors.push(`Established team supports hands-off management approach`);
+  } else if (userPreferences.involvementLevel === 'hands-on' && business.employees <= 20) {
+    score += 4;
+    factors.push(`Business size suitable for hands-on involvement`);
+  } else {
+    score += 2;
+    factors.push(`Management structure adaptable to your involvement preference`);
+  }
+  
+  // Add some deterministic variance based on business name for realism
+  const nameHash = business.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const variance = (nameHash % 6) - 3; // -3 to +3 points
+  score += variance;
+  
+  // Ensure score stays within realistic bounds
+  score = Math.max(68, Math.min(98, score));
+  
+  const explanation = `This business scores ${score}/100 for compatibility with your investment criteria. Key factors: ${factors.slice(0, 4).join(', ')}. ${
+    score >= 85 ? 'Excellent match with strong alignment across multiple criteria.' :
+    score >= 75 ? 'Good compatibility with your investment preferences.' :
+    'Moderate fit that could offer portfolio diversification benefits.'
+  }`;
   
   return {
-    compatibilityScore: baseScore,
+    compatibilityScore: score,
     rankingExplanation: explanation
+  };
+}
+
+export function batchScoreBusinesses(
+  businesses: Business[], 
+  userPreferences: UserPreferences
+): Business[] {
+  return businesses.map(business => {
+    const { compatibilityScore } = generateMockCompatibilityScore(business, userPreferences);
+    return {
+      ...business,
+      aiScore: compatibilityScore
+    };
+  });
+}
+
+export function createBusinessScore(
+  business: Business,
+  userPreferences: UserPreferences
+): BusinessScore {
+  const { compatibilityScore, rankingExplanation } = generateMockCompatibilityScore(business, userPreferences);
+  
+  return {
+    score: compatibilityScore,
+    reasoning: rankingExplanation,
+    factors: {
+      industryMatch: userPreferences.preferredIndustries.includes(business.industry),
+      locationMatch: userPreferences.preferredLocations.some(loc => business.location.includes(loc)),
+      budgetAlignment: business.askingPrice >= userPreferences.budgetRange.min && 
+                      business.askingPrice <= userPreferences.budgetRange.max,
+      businessAge: new Date().getFullYear() - business.yearEstablished,
+      financialHealth: business.cashFlow / business.annualRevenue
+    }
   };
 }
