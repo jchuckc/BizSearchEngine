@@ -34,7 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await fetch("/api/auth/me");
       if (response.ok) {
         const data = await response.json();
-        setUser(data.user);
+        // Auto-login demo: the user data comes directly, not wrapped in a .user property
+        setUser(data);
       }
     } catch (error) {
       console.error("Error checking auth status:", error);
@@ -44,61 +45,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Login failed");
-      }
-
-      const data = await response.json();
-      setUser(data.user);
-    } finally {
-      setIsLoading(false);
-    }
+    // Demo mode: login is automatic - just check auth
+    await checkAuthStatus();
   };
 
   const signup = async (email: string, username: string, password: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Signup failed");
-      }
-
-      const data = await response.json();
-      setUser(data.user);
-    } finally {
-      setIsLoading(false);
-    }
+    // Demo mode: signup is not needed - just check auth
+    await checkAuthStatus();
   };
 
   const logout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      setUser(null);
-      // Clear user-specific cached data
-      queryClient.removeQueries({ queryKey: ['user'] });
-      queryClient.removeQueries({ queryKey: ['businesses', 'ranked'] });
-    } catch (error) {
-      console.error("Error logging out:", error);
-      setUser(null);
-      // Clear cache even if logout request fails
-      queryClient.removeQueries({ queryKey: ['user'] });
-      queryClient.removeQueries({ queryKey: ['businesses', 'ranked'] });
-    }
+    // Demo mode: logout is disabled - user stays logged in
+    console.log("Demo mode: logout disabled");
   };
 
   const value = {

@@ -45,9 +45,13 @@ async function startServer() {
   // Force production mode to serve built static files
   await serveStatic(app);
 
-  // Catch-all handler for client-side routing
+  // Catch-all handler for client-side routing (but not API routes)
   // Force production mode to serve built static files
   app.get('*', (req, res) => {
+    // Don't serve HTML for API routes
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: 'API endpoint not found' });
+    }
     res.sendFile(path.join(process.cwd(), 'dist/client/index.html'));
   });
 
