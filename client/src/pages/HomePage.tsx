@@ -11,9 +11,9 @@ import { TrendingUp, Building2, DollarSign, Star, ArrowRight, Globe } from "luci
 import { useUserPreferences, useCreateUserPreferences } from "../hooks/useUserPreferences";
 import { useWebBusinessSearch } from "../hooks/useWebBusinessSearch";
 import { useAuth } from "../contexts/AuthContext";
-import { type InsertUserPreferences } from "@shared/schema";
+import { type UserPreferencesInsert } from "@shared/schema";
 
-// TODO: remove mock functionality
+// Mock stats for fallback
 const mockStats = [
   {
     title: "Total Businesses",
@@ -47,11 +47,11 @@ const mockStats = [
 
 
 export default function HomePage() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showBusinesses, setShowBusinesses] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showWebResults, setShowWebResults] = useState(false);
+  // const [searchQuery, setSearchQuery] = useState("");
+  // const [showWebResults, setShowWebResults] = useState(false);
   // Initialize filters from user preferences or use defaults
   const [filters, setFilters] = useState({
     priceRange: [50000, 5000000] as [number, number],
@@ -74,14 +74,14 @@ export default function HomePage() {
     if (userPreferencesData?.preferences && isAuthenticated) {
       const prefs = userPreferencesData.preferences;
       setFilters({
-        priceRange: prefs.capitalRange || [50000, 5000000],
-        revenueRange: prefs.revenueRange || [100000, 10000000],
-        location: prefs.location === "any" ? "" : prefs.location || "",
-        industry: prefs.industries || [],
+        priceRange: [prefs.budgetRange?.min || 50000, prefs.budgetRange?.max || 5000000],
+        revenueRange: [100000, 10000000],
+        location: "",
+        industry: prefs.preferredIndustries || [],
         riskTolerance: prefs.riskTolerance || "any",
-        involvement: prefs.involvement || "any",
+        involvement: prefs.involvementLevel || "any",
         employees: prefs.businessSize || "any",
-        paybackPeriod: prefs.paybackPeriod || "any"
+        paybackPeriod: "any"
       });
     }
   }, [userPreferencesData, isAuthenticated]);
@@ -111,7 +111,7 @@ export default function HomePage() {
         ebitda: wb.ebitda,
         employees: wb.employees,
         yearEstablished: wb.yearEstablished,
-        aiScore: wb.compatibilityScore || wb.ranking || 0,
+        aiScore: wb.ranking || 0,
         sourceUrl: wb.sourceUrl || '',
         sourceSite: wb.sourceSite || '',
         createdAt: new Date(),
@@ -166,7 +166,7 @@ export default function HomePage() {
   ];
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
+    console.log(`Searching for: ${query}`);
     setShowBusinesses(true);
   };
 
@@ -179,7 +179,7 @@ export default function HomePage() {
     }
   };
 
-  const handleOnboardingComplete = async (data: InsertUserPreferences) => {
+  const handleOnboardingComplete = async (data: UserPreferencesInsert) => {
     try {
       await createPreferencesMutation.mutateAsync(data);
       setShowOnboarding(false);

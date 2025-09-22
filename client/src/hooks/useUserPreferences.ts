@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '../lib/queryClient';
-import { type UserPreferences, type InsertUserPreferences } from '@shared/schema';
+import { type UserPreferences, type UserPreferencesInsert } from '@shared/schema';
 import { useAuth } from '../contexts/AuthContext';
 
 interface UserPreferencesResponse {

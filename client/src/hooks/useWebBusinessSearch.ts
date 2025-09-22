@@ -92,7 +92,7 @@ export function useWebBusinessSearch() {
             sourceSite: business.sourceSite
           },
           score: {
-            score: business.compatibilityScore || business.ranking || 0,
+            score: business.ranking || 0,
             reasoning: business.rankingExplanation || '',
             factors: {}
           }

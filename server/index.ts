@@ -49,14 +49,11 @@ async function startServer() {
   }
 
   // Catch-all handler for client-side routing
-  app.get('*', (req, res) => {
-    if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production') {
+    app.get('*', (req, res) => {
       res.sendFile(path.join(process.cwd(), 'dist/client/index.html'));
-    } else {
-      // Vite handles this in development
-      res.status(404).send('Not found');
-    }
-  });
+    });
+  }
 
   app.listen(port, '0.0.0.0', () => {
     log(`Demo server running on http://0.0.0.0:${port}`);
