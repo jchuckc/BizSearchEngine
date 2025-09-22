@@ -1,5 +1,5 @@
 // In-memory storage for demo - no database required
-import { Business, BusinessScore, User, UserPreferences } from "../../demo-shared/schema.js";
+import { Business, BusinessScore, User, UserPreferences } from "../../shared/schema.js";
 import { getAllDemoBusinesses, demoUser, demoSearchHistory } from "../data/demoBusinesses.js";
 import { createBusinessScore, batchScoreBusinesses } from "../services/mockAIScoring.js";
 

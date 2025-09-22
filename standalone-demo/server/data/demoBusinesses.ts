@@ -1,5 +1,5 @@
 // Comprehensive demo business data - no external dependencies required
-import { Business } from "../../demo-shared/schema.js";
+import { Business } from "../../shared/schema.js";
 
 // Core demo business listings with realistic data
 export const coreDemoBusinesses = [

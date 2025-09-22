@@ -1,5 +1,5 @@
 // Mock AI scoring service - no OpenAI API required
-import { Business, UserPreferences, BusinessScore } from "../../demo-shared/schema.js";
+import { Business, UserPreferences, BusinessScore } from "../../shared/schema.js";
 
 export function generateMockCompatibilityScore(
   business: Business, 
