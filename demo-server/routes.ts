@@ -1,5 +1,5 @@
 // Simplified routes for demo application - no external dependencies
-import express, { type Express, type Request, type Response } from 'express';
+import express, { type Express, type Request, type Response, type NextFunction } from 'express';
 import { createDemoAuthMiddleware, requireAuth, handleLogin, handleSignup, handleLogout, type DemoRequest } from './middleware/demoAuth.js';
 import { demoStorage } from './storage/memoryStorage.js';
 import { userPreferencesSchema } from '../demo-shared/schema.js';
@@ -14,23 +14,26 @@ export async function registerDemoRoutes(app: Express): Promise<Express> {
   app.post('/api/auth/logout', handleLogout);
   
   // User routes
-  app.get('/api/user/me', requireAuth, async (req: DemoRequest, res: Response) => {
-    res.json(req.user);
+  app.get('/api/user/me', requireAuth, async (req: Request, res: Response) => {
+    const demoReq = req as DemoRequest;
+    res.json(demoReq.user);
   });
 
-  app.get('/api/user/preferences', requireAuth, async (req: DemoRequest, res: Response) => {
+  app.get('/api/user/preferences', requireAuth, async (req: Request, res: Response) => {
     try {
-      const user = await demoStorage.getUserById(req.user?.id || 'demo-user-1');
+      const demoReq = req as DemoRequest;
+      const user = await demoStorage.getUserById(demoReq.user?.id || 'demo-user-1');
       res.json(user?.preferences || null);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch user preferences' });
     }
   });
 
-  app.put('/api/user/preferences', requireAuth, async (req: DemoRequest, res: Response) => {
+  app.put('/api/user/preferences', requireAuth, async (req: Request, res: Response) => {
     try {
+      const demoReq = req as DemoRequest;
       const validatedPreferences = userPreferencesSchema.parse(req.body);
-      await demoStorage.updateUserPreferences(req.user?.id || 'demo-user-1', validatedPreferences);
+      await demoStorage.updateUserPreferences(demoReq.user?.id || 'demo-user-1', validatedPreferences);
       res.json({ success: true });
     } catch (error: any) {
       res.status(400).json({ error: error.message || 'Invalid preferences data' });
@@ -38,7 +41,7 @@ export async function registerDemoRoutes(app: Express): Promise<Express> {
   });
 
   // Business routes
-  app.get('/api/businesses', requireAuth, async (req: DemoRequest, res: Response) => {
+  app.get('/api/businesses', requireAuth, async (req: Request, res: Response) => {
     try {
       const { businesses, totalFound } = await demoStorage.searchBusinesses(req.query);
       res.json({ businesses, total: totalFound });
@@ -47,7 +50,7 @@ export async function registerDemoRoutes(app: Express): Promise<Express> {
     }
   });
 
-  app.get('/api/businesses/search', requireAuth, async (req: DemoRequest, res: Response) => {
+  app.get('/api/businesses/search', requireAuth, async (req: Request, res: Response) => {
     try {
       const { businesses, totalFound } = await demoStorage.searchBusinesses(req.query);
       res.json({ businesses, total: totalFound });
@@ -56,7 +59,7 @@ export async function registerDemoRoutes(app: Express): Promise<Express> {
     }
   });
 
-  app.get('/api/businesses/:id', requireAuth, async (req: DemoRequest, res: Response) => {
+  app.get('/api/businesses/:id', requireAuth, async (req: Request, res: Response) => {
     try {
       const business = await demoStorage.getBusinessById(req.params.id);
       const score = await demoStorage.getBusinessScore(req.params.id);
@@ -72,7 +75,7 @@ export async function registerDemoRoutes(app: Express): Promise<Express> {
   });
 
   // Business ranking routes
-  app.post('/api/businesses/:id/rank', requireAuth, async (req: DemoRequest, res: Response) => {
+  app.post('/api/businesses/:id/rank', requireAuth, async (req: Request, res: Response) => {
     try {
       const result = await demoStorage.rankBusiness(req.params.id);
       if (!result) {
@@ -84,7 +87,7 @@ export async function registerDemoRoutes(app: Express): Promise<Express> {
     }
   });
 
-  app.post('/api/businesses/rank-batch', requireAuth, async (req: DemoRequest, res: Response) => {
+  app.post('/api/businesses/rank-batch', requireAuth, async (req: Request, res: Response) => {
     try {
       const { businessIds } = req.body;
       if (!Array.isArray(businessIds)) {
@@ -99,12 +102,13 @@ export async function registerDemoRoutes(app: Express): Promise<Express> {
   });
 
   // Web search simulation (replaces real web scraping)
-  app.post('/api/web-search', requireAuth, async (req: DemoRequest, res: Response) => {
+  app.post('/api/web-search', requireAuth, async (req: Request, res: Response) => {
     try {
       const { query = '', filters = {} } = req.body;
       
       // Add search to history
-      await demoStorage.addSearchHistory(req.user?.id || 'demo-user-1', {
+      const demoReq = req as DemoRequest;
+      await demoStorage.addSearchHistory(demoReq.user?.id || 'demo-user-1', {
         query,
         filters,
         resultsCount: 0 // Will be updated below
@@ -119,9 +123,10 @@ export async function registerDemoRoutes(app: Express): Promise<Express> {
   });
 
   // Search history routes
-  app.get('/api/search-history', requireAuth, async (req: DemoRequest, res: Response) => {
+  app.get('/api/search-history', requireAuth, async (req: Request, res: Response) => {
     try {
-      const history = await demoStorage.getSearchHistory(req.user?.id || 'demo-user-1');
+      const demoReq = req as DemoRequest;
+      const history = await demoStorage.getSearchHistory(demoReq.user?.id || 'demo-user-1');
       res.json(history);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch search history' });
