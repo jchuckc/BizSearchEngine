@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
-import { HeroSection } from "@/components/HeroSection";
-import { SearchFilters } from "@/components/SearchFilters";
-import { BusinessList } from "@/components/BusinessList";
-import { StatsOverview } from "@/components/StatsOverview";
-import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { HeroSection } from "../components/HeroSection";
+import { SearchFilters } from "../components/SearchFilters";
+import { BusinessList } from "../components/BusinessList";
+import { StatsOverview } from "../components/StatsOverview";
+import { OnboardingFlow } from "../components/onboarding/OnboardingFlow";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { TrendingUp, Building2, DollarSign, Star, ArrowRight, Globe } from "lucide-react";
 // Removed unused imports as we now only use web search results
-import { useUserPreferences, useCreateUserPreferences } from "@/hooks/useUserPreferences";
-import { useWebBusinessSearch } from "@/hooks/useWebBusinessSearch";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUserPreferences, useCreateUserPreferences } from "../hooks/useUserPreferences";
+import { useWebBusinessSearch } from "../hooks/useWebBusinessSearch";
+import { useAuth } from "../contexts/AuthContext";
 import { type InsertUserPreferences } from "@shared/schema";
 
 // TODO: remove mock functionality
