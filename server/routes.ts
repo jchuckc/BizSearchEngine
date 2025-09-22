@@ -24,9 +24,22 @@ export function setupRoutes(app: Express): void {
   app.get('/api/user/preferences', async (req: any, res: Response) => {
     try {
       const user = await demoStorage.getUserById(req.user.id);
-      res.json(user?.preferences || null);
+      res.json({ preferences: user?.preferences || null });
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch user preferences' });
+    }
+  });
+
+  // POST endpoint for creating user preferences
+  app.post('/api/user/preferences', async (req: any, res: Response) => {
+    try {
+      const validatedPreferences = userPreferencesSchema.parse(req.body);
+      await demoStorage.updateUserPreferences(req.user.id, validatedPreferences);
+      // Return the saved preferences from storage
+      const user = await demoStorage.getUserById(req.user.id);
+      res.json({ preferences: user?.preferences || validatedPreferences });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || 'Invalid preferences data' });
     }
   });
 
@@ -34,7 +47,9 @@ export function setupRoutes(app: Express): void {
     try {
       const validatedPreferences = userPreferencesSchema.parse(req.body);
       await demoStorage.updateUserPreferences(req.user.id, validatedPreferences);
-      res.json({ success: true });
+      // Return the saved preferences from storage
+      const user = await demoStorage.getUserById(req.user.id);
+      res.json({ preferences: user?.preferences || validatedPreferences });
     } catch (error: any) {
       res.status(400).json({ error: error.message || 'Invalid preferences data' });
     }
@@ -54,6 +69,21 @@ export function setupRoutes(app: Express): void {
     try {
       const { businesses, totalFound } = await demoStorage.searchBusinesses(req.query);
       res.json({ businesses, total: totalFound });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to search businesses' });
+    }
+  });
+
+  // Add the web-search endpoint that the frontend expects
+  app.get('/api/businesses/web-search', async (req: Request, res: Response) => {
+    try {
+      const { businesses, totalFound } = await demoStorage.searchBusinesses(req.query);
+      res.json({ 
+        businesses, 
+        totalFound, 
+        searchSummary: `Found ${totalFound} businesses matching your criteria`,
+        source: 'demo'
+      });
     } catch (error) {
       res.status(500).json({ error: 'Failed to search businesses' });
     }

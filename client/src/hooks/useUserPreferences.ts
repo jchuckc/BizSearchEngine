@@ -50,7 +50,7 @@ export function useCreateUserPreferences() {
   const { user } = useAuth();
   
   return useMutation({
-    mutationFn: async (data: InsertUserPreferences): Promise<UserPreferences> => {
+    mutationFn: async (data: UserPreferencesInsert): Promise<UserPreferences> => {
       const response = await fetch('/api/user/preferences', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,7 +81,7 @@ export function useUpdateUserPreferences() {
   const { user } = useAuth();
   
   return useMutation({
-    mutationFn: async (data: Partial<InsertUserPreferences>): Promise<UserPreferences> => {
+    mutationFn: async (data: Partial<UserPreferencesInsert>): Promise<UserPreferences> => {
       const response = await fetch('/api/user/preferences', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
