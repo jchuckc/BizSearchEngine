@@ -42,18 +42,14 @@ setupRoutes(app);
 // Async startup function
 async function startServer() {
   // Handle Vite in development or serve static files in production
-  if (process.env.NODE_ENV === 'production') {
-    await serveStatic(app);
-  } else {
-    await setupVite(app);
-  }
+  // Force production mode to serve built static files
+  await serveStatic(app);
 
   // Catch-all handler for client-side routing
-  if (process.env.NODE_ENV === 'production') {
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(process.cwd(), 'dist/client/index.html'));
-    });
-  }
+  // Force production mode to serve built static files
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'dist/client/index.html'));
+  });
 
   app.listen(port, '0.0.0.0', () => {
     log(`Demo server running on http://0.0.0.0:${port}`);

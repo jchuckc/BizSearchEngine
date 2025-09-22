@@ -9,7 +9,7 @@ import { Checkbox } from "../ui/checkbox";
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { useToast } from "../../hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { queryClient } from "../lib/queryClient";
+import { queryClient } from "../../lib/queryClient";
 
 const industries = [
   "Technology",
