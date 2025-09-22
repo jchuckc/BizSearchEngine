@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient';
+import { queryClient } from '../lib/queryClient';
 import { type Business, type BusinessScore } from '@shared/schema';
 
 // Types for API responses

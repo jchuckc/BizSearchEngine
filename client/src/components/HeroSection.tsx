@@ -1,8 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { Search, TrendingUp, Filter, Zap } from "lucide-react";
 import { useState } from "react";
-import heroImage from "@assets/generated_images/Business_handshake_hero_image_9e473f8c.png";
+const heroImage = "/hero-image.png";
 
 interface HeroSectionProps {
   onSearch: (query: string) => void;

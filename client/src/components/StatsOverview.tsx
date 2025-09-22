@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { TrendingUp, Building2, DollarSign, Star } from "lucide-react";
 
 interface StatItem {

@@ -1,11 +1,11 @@
 import { BusinessCard } from "./BusinessCard";
 import { BusinessDetailsModal } from "./BusinessDetailsModal";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "../components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { ArrowUpDown, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { type Business } from "@shared/schema";
-import { useBusiness } from "@/hooks/useBusinesses";
+import { useBusiness } from "../hooks/useBusinesses";
 
 interface BusinessListProps {
   businesses: Business[];

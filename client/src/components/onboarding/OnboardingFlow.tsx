@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { AuthForms } from "@/components/auth/AuthForms";
-import { PreferencesForm } from "@/components/onboarding/PreferencesForm";
-import { useAuth } from "@/contexts/AuthContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Button } from "../ui/button";
+import { AuthForms } from "../components/auth/AuthForms";
+import { PreferencesForm } from "../components/onboarding/PreferencesForm";
+import { useAuth } from "../../contexts/AuthContext";
 import { CheckCircle, User, Settings } from "lucide-react";
 
 interface OnboardingFlowProps {

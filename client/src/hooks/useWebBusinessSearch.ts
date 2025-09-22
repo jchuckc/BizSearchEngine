@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { queryClient, apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
+import { queryClient, apiRequest } from '../lib/queryClient';
+import { useToast } from './use-toast';
 
 interface WebSearchResult {
   businesses: Array<{

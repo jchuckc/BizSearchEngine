@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { ThemeToggle } from "./ThemeToggle";
 import { Search, Building2, User, Settings, Menu, LogOut } from "lucide-react";
 import { useState } from "react";
