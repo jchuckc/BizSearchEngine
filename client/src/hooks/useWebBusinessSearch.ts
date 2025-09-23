@@ -85,10 +85,11 @@ export function useWebBusinessSearch() {
             employees: business.employees,
             yearEstablished: business.yearEstablished,
             sourceUrl: business.sourceUrl,
-            sourceSite: business.sourceSite
+            sourceSite: business.sourceSite,
+            aiScore: business.aiScore // Include aiScore in cached business data
           },
           score: {
-            score: business.ranking || 0,
+            score: business.aiScore || 0,
             reasoning: business.rankingExplanation || '',
             factors: {}
           }
