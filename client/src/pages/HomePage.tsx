@@ -89,6 +89,12 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
   // Only show web search results
   const hasWebSearchResults = webSearchMutation.data?.businesses && webSearchMutation.data.businesses.length > 0;
   
+  console.log('📊 DEBUG: hasWebSearchResults:', hasWebSearchResults);
+  console.log('📊 DEBUG: webSearchMutation.data:', webSearchMutation.data);
+  console.log('📊 DEBUG: webSearchMutation.isPending:', webSearchMutation.isPending);
+  console.log('📊 DEBUG: webSearchMutation.isSuccess:', webSearchMutation.isSuccess);
+  console.log('📊 DEBUG: webSearchMutation.error:', webSearchMutation.error);
+  
   // Helper function to create stable IDs for web search results
   const createStableWebId = (business: any): string => {
     if (business.sourceUrl) {
@@ -99,9 +105,17 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
   };
 
   const displayBusinesses = hasWebSearchResults
-    ? webSearchMutation.data!.businesses.map(wb => {
-        console.log('Processing business:', wb.name, 'AI Score:', wb.aiScore, 'Ranking:', wb.ranking);
-        return {
+    ? webSearchMutation.data!.businesses.map((wb, index) => {
+        console.log(`🏢 DEBUG: Processing business ${index}: ${wb.name}`);
+        console.log(`🏢 DEBUG: Business ${index} raw wb.aiScore:`, wb.aiScore);
+        console.log(`🏢 DEBUG: Business ${index} raw wb.ranking:`, wb.ranking);
+        console.log(`🏢 DEBUG: Business ${index} raw wb.industry:`, wb.industry);
+        console.log(`🏢 DEBUG: Business ${index} wb object:`, wb);
+        
+        const finalAiScore = wb.aiScore || 0;
+        console.log(`🏢 DEBUG: Business ${index} final aiScore assigned:`, finalAiScore);
+        
+        const mappedBusiness = {
           id: createStableWebId(wb),
           name: wb.name,
           description: wb.description,
@@ -113,7 +127,7 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
           ebitda: wb.ebitda,
           employees: wb.employees,
           yearEstablished: wb.yearEstablished,
-          aiScore: wb.aiScore || 0,
+          aiScore: finalAiScore,
           sourceUrl: wb.sourceUrl || '',
           sourceSite: wb.sourceSite || '',
           createdAt: new Date(),
@@ -122,8 +136,18 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
           businessDetails: null,
           isActive: true
         };
+        
+        console.log(`🏢 DEBUG: Business ${index} mapped aiScore:`, mappedBusiness.aiScore);
+        console.log(`🏢 DEBUG: Business ${index} mapped object:`, mappedBusiness);
+        return mappedBusiness;
       })
     : [];
+    
+  console.log('🏢 DEBUG: Final displayBusinesses array:');
+  console.log('🏢 DEBUG: displayBusinesses length:', displayBusinesses.length);
+  displayBusinesses.forEach((business, index) => {
+    console.log(`🏢 DEBUG: Final business ${index}: ${business.name} - aiScore: ${business.aiScore}`);
+  });
   
   const isLoading = webSearchMutation.isPending;
 
@@ -154,7 +178,15 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
     },
     {
       title: "AI-Ranked Matches",
-      value: displayBusinesses.filter(b => b.aiScore >= 80).length.toString(), 
+      value: (() => {
+        const highScoreBusinesses = displayBusinesses.filter(b => b.aiScore >= 80);
+        console.log('📈 DEBUG: Calculating AI-Ranked Matches');
+        console.log('📈 DEBUG: Total displayBusinesses:', displayBusinesses.length);
+        console.log('📈 DEBUG: All aiScores:', displayBusinesses.map(b => `${b.name}: ${b.aiScore}`));
+        console.log('📈 DEBUG: Businesses with aiScore >= 80:', highScoreBusinesses.length);
+        console.log('📈 DEBUG: High score businesses:', highScoreBusinesses.map(b => `${b.name}: ${b.aiScore}`));
+        return highScoreBusinesses.length.toString();
+      })(),
       change: "High compatibility",
       trend: "up" as const,
       icon: Star

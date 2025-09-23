@@ -14,6 +14,11 @@ interface StatsOverviewProps {
 }
 
 export function StatsOverview({ stats }: StatsOverviewProps) {
+  // Debug logging for stats
+  console.log('📊 DEBUG: StatsOverview received stats:', stats);
+  stats.forEach((stat, index) => {
+    console.log(`📊 DEBUG: Stat ${index}: ${stat.title} = ${stat.value}`);
+  });
   const getTrendColor = (trend?: string) => {
     switch (trend) {
       case "up": return "text-green-600 dark:text-green-400";

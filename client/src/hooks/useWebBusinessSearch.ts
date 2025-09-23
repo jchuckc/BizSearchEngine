@@ -37,6 +37,7 @@ export function useWebBusinessSearch() {
 
   return useMutation<WebSearchResponse, Error, any>({
     mutationFn: async (filters?: any): Promise<WebSearchResponse> => {
+      console.log('🔍 DEBUG: WebSearch mutationFn called with filters:', filters);
       const params = new URLSearchParams();
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
@@ -59,14 +60,29 @@ export function useWebBusinessSearch() {
       }
       
       const url = `/api/businesses/web-search${params.toString() ? `?${params.toString()}` : ''}`;
+      console.log('🔍 DEBUG: Making API request to:', url);
       const response = await apiRequest('GET', url);
-      return response.json();
+      const data = await response.json();
+      console.log('🔍 DEBUG: Raw API response data:', data);
+      console.log('🔍 DEBUG: API response businesses count:', data.businesses?.length);
+      if (data.businesses?.length > 0) {
+        console.log('🔍 DEBUG: First business from API:', data.businesses[0]);
+        console.log('🔍 DEBUG: First business aiScore from API:', data.businesses[0].aiScore);
+      }
+      return data;
     },
     onSuccess: (data) => {
-      // Debug logging to trace AI scores
-      console.log('WebSearch onSuccess - Total businesses:', data.businesses?.length);
+      // Enhanced debug logging to trace AI scores
+      console.log('🎯 DEBUG: WebSearch onSuccess called');
+      console.log('🎯 DEBUG: onSuccess data received:', data);
+      console.log('🎯 DEBUG: Total businesses in onSuccess:', data.businesses?.length);
       if (data.businesses?.length > 0) {
-        console.log('First business aiScore:', data.businesses[0].aiScore, 'ranking:', data.businesses[0].ranking);
+        data.businesses.forEach((business, index) => {
+          console.log(`🎯 DEBUG: Business ${index}: ${business.name}`);
+          console.log(`🎯 DEBUG: Business ${index} aiScore:`, business.aiScore);
+          console.log(`🎯 DEBUG: Business ${index} ranking:`, business.ranking);
+          console.log(`🎯 DEBUG: Business ${index} industry:`, business.industry);
+        });
       }
       
       // Invalidate stale cache and set fresh data

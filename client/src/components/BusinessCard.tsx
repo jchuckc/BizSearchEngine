@@ -40,6 +40,11 @@ export function BusinessCard({
   onViewDetails,
   onContact
 }: BusinessCardProps) {
+  // Debug logging for AI scores in BusinessCard component
+  console.log(`🃏 DEBUG: BusinessCard render - ${name}`);
+  console.log(`🃏 DEBUG: BusinessCard aiScore prop:`, aiScore);
+  console.log(`🃏 DEBUG: BusinessCard aiScore typeof:`, typeof aiScore);
+  console.log(`🃏 DEBUG: BusinessCard aiScore !== undefined:`, aiScore !== undefined);
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -66,8 +71,19 @@ export function BusinessCard({
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 fill-primary text-primary" />
             <span className={`font-bold ${getScoreColor(aiScore)}`} data-testid={`text-ai-score-${id}`}>
-              {aiScore}
+              {(() => {
+                console.log(`🃏 DEBUG: Rendering aiScore for ${name}: ${aiScore}`);
+                return aiScore;
+              })()}
             </span>
+          </div>
+        )}
+        {aiScore === undefined && (
+          <div>
+            {(() => {
+              console.log(`🃏 DEBUG: aiScore is undefined for ${name}, not rendering score`);
+              return null;
+            })()}
           </div>
         )}
       </CardHeader>
