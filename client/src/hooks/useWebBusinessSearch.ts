@@ -37,14 +37,11 @@ export function useWebBusinessSearch() {
   return useMutation<WebSearchResponse, Error, any>({
     mutationFn: async (filters?: any): Promise<WebSearchResponse> => {
       const params = new URLSearchParams();
-      console.log('WebSearch filters:', filters);
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
-          console.log(`Processing filter: ${key} = ${value}`);
           // Special handling for query parameter to always include it
           if (key === 'query' && value && value.trim()) {
             params.append('query', String(value).trim());
-            console.log('Added query parameter:', value);
           }
           // Skip complex array/object filters to avoid encoding issues, just use simple string filters
           else if (key === 'location' && value && value !== 'Any Location' && value.trim()) {
@@ -61,12 +58,8 @@ export function useWebBusinessSearch() {
       }
       
       const url = `/api/businesses/web-search${params.toString() ? `?${params.toString()}` : ''}`;
-      console.log('Final API URL:', url);
-      console.log('URLParams object:', Object.fromEntries(params));
       const response = await apiRequest('GET', url);
-      const result = await response.json();
-      console.log('API Response:', result);
-      return result;
+      return response.json();
     },
     onSuccess: (data) => {
       // Cache the results for the web search query

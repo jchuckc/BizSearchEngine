@@ -94,7 +94,6 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
   // Handle global search query from header
   useEffect(() => {
     if (globalSearchQuery && globalSearchQuery.trim()) {
-      console.log('Updating filters with global search query:', globalSearchQuery);
       setFilters(prev => ({
         ...prev,
         query: globalSearchQuery.trim()
