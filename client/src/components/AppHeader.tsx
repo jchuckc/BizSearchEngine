@@ -1,9 +1,8 @@
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { ThemeToggle } from "./ThemeToggle";
-import { Search, Building2, User, Settings, Menu, LogOut, Brain } from "lucide-react";
+import { Search, Building2, User, Settings, Menu, LogOut } from "lucide-react";
 import { useState } from "react";
-import { Link } from "wouter";
 
 interface AppHeaderProps {
   onSearch: (query: string) => void;
@@ -93,18 +92,6 @@ export function AppHeader({ onSearch, onShowProfile, onShowSettings, onToggleMob
             >
               <Search className="h-5 w-5" />
             </Button>
-
-            {/* AI Rankings */}
-            <Link href="/ai-rankings">
-              <Button
-                variant="ghost"
-                size="sm"
-                data-testid="button-ai-rankings"
-              >
-                <Brain className="h-5 w-5" />
-                <span className="hidden sm:inline ml-2">AI Rankings</span>
-              </Button>
-            </Link>
 
             {/* Profile */}
             <Button

@@ -7,7 +7,6 @@ import { ThemeProvider } from "./components/theme-provider";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AppHeader } from "./components/AppHeader";
 import HomePage from "./pages/HomePage";
-import AIResultsPage from "./pages/AIResultsPage";
 import NotFound from "./pages/not-found";
 import { useState } from "react";
 import { useAuth } from "./contexts/AuthContext";
@@ -47,7 +46,6 @@ function AppContent() {
       <main className="flex-1">
         <Switch>
           <Route path="/" component={() => <HomePage globalSearchQuery={globalSearchQuery} />} />
-          <Route path="/ai-rankings" component={AIResultsPage} />
           <Route component={NotFound} />
         </Switch>
       </main>
