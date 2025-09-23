@@ -46,31 +46,27 @@ export function useWebBusinessSearch() {
             params.append('query', String(value).trim());
             console.log('Added query parameter:', value);
           }
-          // Special handling for location to allow "Any Location" to be sent to server
-          else if (key === 'location' && (value === '' || value === 'Any Location')) {
-            params.append('location', 'Any Location');
-          } else if (value && value !== '' && value !== 'any' && (Array.isArray(value) ? value.length > 0 : true)) {
-            // Map 'industry' to 'industries' for server compatibility
-            const serverKey = key === 'industry' ? 'industries' : key;
-            
-            if (Array.isArray(value)) {
-              // Filter out 'Any' from industry arrays
-              const filteredValue = key === 'industry' ? value.filter(v => v !== 'Any') : value;
-              if (filteredValue.length > 0) {
-                params.append(serverKey, JSON.stringify(filteredValue));
-              }
-            } else if (typeof value === 'object' && key.includes('Range')) {
-              params.append(serverKey, JSON.stringify(value));
-            } else {
-              params.append(serverKey, String(value));
-            }
+          // Skip complex array/object filters to avoid encoding issues, just use simple string filters
+          else if (key === 'location' && value && value !== 'Any Location' && value.trim()) {
+            params.append('location', String(value).trim());
           }
+          else if (key === 'riskTolerance' && value && value !== 'any') {
+            params.append('riskTolerance', String(value));
+          }
+          else if (key === 'involvement' && value && value !== 'any') {
+            params.append('involvement', String(value));
+          }
+          // Skip complex array/object filters like priceRange, revenueRange, industries
         });
       }
       
       const url = `/api/businesses/web-search${params.toString() ? `?${params.toString()}` : ''}`;
+      console.log('Final API URL:', url);
+      console.log('URLParams object:', Object.fromEntries(params));
       const response = await apiRequest('GET', url);
-      return response.json();
+      const result = await response.json();
+      console.log('API Response:', result);
+      return result;
     },
     onSuccess: (data) => {
       // Cache the results for the web search query
