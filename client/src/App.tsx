@@ -7,19 +7,12 @@ import { ThemeProvider } from "./components/theme-provider";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AppHeader } from "./components/AppHeader";
 import HomePage from "./pages/HomePage";
+import AIResultsPage from "./pages/AIResultsPage";
 import NotFound from "./pages/not-found";
 import { useState } from "react";
 import { useAuth } from "./contexts/AuthContext";
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={HomePage} />
-      {/* Fallback to 404 */}
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+// Removed unused Router function
 
 function AppContent() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -54,6 +47,7 @@ function AppContent() {
       <main className="flex-1">
         <Switch>
           <Route path="/" component={() => <HomePage globalSearchQuery={globalSearchQuery} />} />
+          <Route path="/ai-rankings" component={AIResultsPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

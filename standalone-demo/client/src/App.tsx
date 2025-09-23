@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppHeader } from "@/components/AppHeader";
 import HomePage from "@/pages/HomePage";
+import AIResultsPage from "@/pages/AIResultsPage";
 import NotFound from "@/pages/not-found";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +17,9 @@ function Router({ globalSearchQuery }: { globalSearchQuery: string }) {
     <Switch>
       <Route path="/">
         <HomePage globalSearchQuery={globalSearchQuery} />
+      </Route>
+      <Route path="/ai-rankings">
+        <AIResultsPage />
       </Route>
       {/* Fallback to 404 */}
       <Route component={NotFound} />
