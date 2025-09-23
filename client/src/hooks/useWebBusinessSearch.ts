@@ -37,10 +37,17 @@ export function useWebBusinessSearch() {
   return useMutation<WebSearchResponse, Error, any>({
     mutationFn: async (filters?: any): Promise<WebSearchResponse> => {
       const params = new URLSearchParams();
+      console.log('WebSearch filters:', filters);
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
+          console.log(`Processing filter: ${key} = ${value}`);
+          // Special handling for query parameter to always include it
+          if (key === 'query' && value && value.trim()) {
+            params.append('query', String(value).trim());
+            console.log('Added query parameter:', value);
+          }
           // Special handling for location to allow "Any Location" to be sent to server
-          if (key === 'location' && (value === '' || value === 'Any Location')) {
+          else if (key === 'location' && (value === '' || value === 'Any Location')) {
             params.append('location', 'Any Location');
           } else if (value && value !== '' && value !== 'any' && (Array.isArray(value) ? value.length > 0 : true)) {
             // Map 'industry' to 'industries' for server compatibility

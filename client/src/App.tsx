@@ -23,11 +23,12 @@ function Router() {
 
 function AppContent() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState<string>('');
   const { isAuthenticated, logout } = useAuth();
 
   const handleSearch = (query: string) => {
     console.log(`Global search: ${query}`);
-    // TODO: Implement global search functionality
+    setGlobalSearchQuery(query);
   };
 
   const handleShowProfile = () => {
@@ -51,7 +52,10 @@ function AppContent() {
         isAuthenticated={isAuthenticated}
       />
       <main className="flex-1">
-        <Router />
+        <Switch>
+          <Route path="/" component={() => <HomePage globalSearchQuery={globalSearchQuery} />} />
+          <Route component={NotFound} />
+        </Switch>
       </main>
     </div>
   );

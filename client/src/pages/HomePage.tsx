@@ -46,7 +46,11 @@ const mockStats = [
 ];
 
 
-export default function HomePage() {
+interface HomePageProps {
+  globalSearchQuery?: string;
+}
+
+export default function HomePage({ globalSearchQuery }: HomePageProps) {
   const { isAuthenticated } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showBusinesses, setShowBusinesses] = useState(false);
@@ -86,6 +90,24 @@ export default function HomePage() {
       });
     }
   }, [userPreferencesData, isAuthenticated]);
+
+  // Handle global search query from header
+  useEffect(() => {
+    if (globalSearchQuery && globalSearchQuery.trim()) {
+      console.log('Updating filters with global search query:', globalSearchQuery);
+      setFilters(prev => ({
+        ...prev,
+        query: globalSearchQuery.trim()
+      }));
+      // Auto-trigger search when global query is received
+      setShowBusinesses(true);
+      setShowWebResults(true);
+      webSearchMutation.mutate({
+        ...filters,
+        query: globalSearchQuery.trim()
+      });
+    }
+  }, [globalSearchQuery]);
 
   // Only show web search results
   const hasWebSearchResults = webSearchMutation.data?.businesses && webSearchMutation.data.businesses.length > 0;
