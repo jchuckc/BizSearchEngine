@@ -35,6 +35,16 @@ export function BusinessList({
 
   // Fetch detailed business data when modal is opened
   const { data: businessDetails, isLoading: businessDetailsLoading } = useBusiness(selectedBusinessId || "");
+  
+  // Debug logging
+  if (selectedBusinessId && businessDetails) {
+    console.log('BusinessList: selectedBusinessId =', selectedBusinessId);
+    console.log('BusinessList: businessDetails =', { 
+      business: businessDetails.business?.id,
+      hasScore: !!businessDetails.score,
+      score: businessDetails.score 
+    });
+  }
 
   const handleViewDetails = (businessId: string) => {
     setSelectedBusinessId(businessId);

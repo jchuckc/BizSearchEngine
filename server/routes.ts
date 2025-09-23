@@ -91,8 +91,28 @@ export function setupRoutes(app: Express): void {
 
   app.get('/api/businesses/:id', async (req: Request, res: Response) => {
     try {
-      const business = await demoStorage.getBusinessById(req.params.id);
-      const score = await demoStorage.getBusinessScore(req.params.id);
+      let businessId = req.params.id;
+      
+      // Handle web search business IDs by extracting original ID
+      if (businessId.startsWith('web-')) {
+        // Extract original business ID from web search format
+        // web-https---demo-example-com-business-37 -> business-37 -> demo-gen-31
+        const parts = businessId.split('-');
+        if (parts.length >= 2) {
+          const lastPart = parts[parts.length - 1];
+          if (!isNaN(Number(lastPart))) {
+            // Try to find business by index (business-37 means index 37 in generated businesses)
+            const allBusinesses = await demoStorage.getAllBusinesses();
+            const businessIndex = parseInt(lastPart) - 7; // Adjust for demo business numbering
+            if (businessIndex >= 0 && businessIndex < allBusinesses.length) {
+              businessId = allBusinesses[businessIndex].id;
+            }
+          }
+        }
+      }
+      
+      const business = await demoStorage.getBusinessById(businessId);
+      const score = await demoStorage.getBusinessScore(businessId);
       
       if (!business) {
         return res.status(404).json({ error: 'Business not found' });

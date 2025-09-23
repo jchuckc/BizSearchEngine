@@ -158,16 +158,25 @@ export function createBusinessScore(
 ): BusinessScore {
   const { compatibilityScore, rankingExplanation } = generateMockCompatibilityScore(business, userPreferences);
   
+  // Calculate individual factor scores (0-100) to match UI expectations
+  const industryMatch = userPreferences.preferredIndustries.includes(business.industry);
+  const locationMatch = userPreferences.preferredLocations.some(loc => business.location.includes(loc));
+  const budgetInRange = business.askingPrice >= userPreferences.budgetRange.min && 
+                        business.askingPrice <= userPreferences.budgetRange.max;
+  const financialHealthRatio = business.cashFlow / business.annualRevenue;
+  const businessAge = new Date().getFullYear() - business.yearEstablished;
+  
   return {
     score: compatibilityScore,
     reasoning: rankingExplanation,
     factors: {
-      industryMatch: userPreferences.preferredIndustries.includes(business.industry),
-      locationMatch: userPreferences.preferredLocations.some(loc => business.location.includes(loc)),
-      budgetAlignment: business.askingPrice >= userPreferences.budgetRange.min && 
-                      business.askingPrice <= userPreferences.budgetRange.max,
-      businessAge: new Date().getFullYear() - business.yearEstablished,
-      financialHealth: business.cashFlow / business.annualRevenue
+      // Map to UI expected properties with 0-100 scores
+      industryFit: industryMatch ? 95 : 65,
+      priceMatch: budgetInRange ? 90 : (business.askingPrice < userPreferences.budgetRange.min ? 75 : 55),
+      locationScore: locationMatch ? 88 : 60,
+      riskAlignment: businessAge >= 5 ? 85 : (businessAge >= 3 ? 75 : 65),
+      involvementFit: userPreferences.involvementLevel === 'hands-off' && business.employees >= 10 ? 90 : 
+                      userPreferences.involvementLevel === 'hands-on' && business.employees <= 20 ? 85 : 70
     }
   };
 }

@@ -95,19 +95,20 @@ export function useBusinessSearch(query: string, enabled: boolean = true) {
 
 // Hook for fetching a single business
 export function useBusiness(id: string) {
-  const isWebResult = id?.startsWith('web-');
-  
   return useQuery({
     queryKey: ['businesses', id],
     queryFn: async (): Promise<{ business: Business; score?: BusinessScore }> => {
+      console.log('useBusiness: fetching business', id);
       const response = await fetch(`/api/businesses/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch business');
       }
-      return response.json();
+      const data = await response.json();
+      console.log('useBusiness: received data', { businessId: data.business?.id, hasScore: !!data.score, score: data.score });
+      return data;
     },
-    enabled: !!id && !isWebResult, // Skip network fetch for web search results
-    staleTime: isWebResult ? Infinity : undefined, // Web results use cached data only
+    enabled: !!id, // Allow fetch for all business IDs including web search results
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 }
 
