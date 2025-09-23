@@ -74,8 +74,6 @@ export function BusinessDetailsModal({
           </div>
         ) : business ? (
           <div className="space-y-6">
-          {/* Debug output */}
-          {console.log('BusinessDetailsModal - business:', business?.id, 'score:', score)}
           {/* AI Score Section */}
           {score && (
             <Card className="border-primary/20">
