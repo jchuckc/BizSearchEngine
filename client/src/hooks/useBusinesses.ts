@@ -98,13 +98,13 @@ export function useBusiness(id: string) {
   return useQuery({
     queryKey: ['businesses', id],
     queryFn: async (): Promise<{ business: Business; score?: BusinessScore }> => {
-      console.log('useBusiness: fetching business', id);
+      console.log('🔍 useBusiness: fetching business', id);
       
-      // For web-prefixed IDs, the data should already be cached by useWebBusinessSearch
-      // Only make API calls for real business IDs (not web-prefixed)
-      if (id.startsWith('web-')) {
-        console.log('useBusiness: web-prefixed ID detected, should use cached data');
-        throw new Error('Web search business should be cached, not fetched from API');
+      // Check if this business is already cached from web search results
+      const cachedData = queryClient.getQueryData(['businesses', id]);
+      if (cachedData) {
+        console.log('🔍 useBusiness: Found cached data for business', id);
+        return cachedData as { business: Business; score?: BusinessScore };
       }
       
       const response = await fetch(`/api/businesses/${id}`);

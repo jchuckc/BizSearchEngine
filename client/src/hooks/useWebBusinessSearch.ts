@@ -92,11 +92,12 @@ export function useWebBusinessSearch() {
       queryClient.invalidateQueries({ queryKey: ['businesses', 'web-search'] });
       queryClient.setQueryData(['businesses', 'web-search'], data);
       
-      // Cache individual business details for web search results
+      // Cache individual business details for web search results using their original IDs
       data.businesses.forEach(business => {
-        const businessId = business.sourceUrl ? 
-          `web-${business.sourceUrl.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 50)}` :
-          `web-${business.sourceSite}-${business.name.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 30)}`;
+        // Use the original business ID from the API response for caching
+        const businessId = business.id;
+        
+        console.log('🎯 DEBUG: Caching business with ID:', businessId);
         
         queryClient.setQueryData(['businesses', businessId], {
           business: {

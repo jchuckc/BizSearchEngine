@@ -121,7 +121,7 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
         const finalAiScore = wb.aiScore; // Direct assignment, API confirmed working
         
         const mappedBusiness = {
-          id: createStableWebId(wb),
+          id: wb.id, // Use original business ID instead of creating web-prefixed one
           name: wb.name,
           description: wb.description,
           location: wb.location,

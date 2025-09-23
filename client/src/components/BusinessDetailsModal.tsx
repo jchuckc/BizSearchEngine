@@ -74,6 +74,7 @@ export function BusinessDetailsModal({
           </div>
         ) : business ? (
           <div className="space-y-6">
+          
           {/* AI Score Section */}
           {score && (
             <Card className="border-primary/20">
