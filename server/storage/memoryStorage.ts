@@ -40,6 +40,17 @@ export class DemoMemoryStorage {
   async searchBusinesses(filters: any = {}): Promise<{ businesses: Business[]; totalFound: number }> {
     let filtered = [...this.businesses];
 
+    // Apply text search query
+    if (filters.query && filters.query.trim()) {
+      const query = filters.query.toLowerCase().trim();
+      filtered = filtered.filter(b => 
+        b.name.toLowerCase().includes(query) ||
+        b.description.toLowerCase().includes(query) ||
+        b.industry.toLowerCase().includes(query) ||
+        b.location.toLowerCase().includes(query)
+      );
+    }
+
     // Apply filters
     if (filters.industry) {
       filtered = filtered.filter(b => 

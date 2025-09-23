@@ -50,8 +50,7 @@ export default function HomePage() {
   const { isAuthenticated } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showBusinesses, setShowBusinesses] = useState(false);
-  // const [searchQuery, setSearchQuery] = useState("");
-  // const [showWebResults, setShowWebResults] = useState(false);
+  const [showWebResults, setShowWebResults] = useState(false);
   // Initialize filters from user preferences or use defaults
   const [filters, setFilters] = useState({
     priceRange: [50000, 5000000] as [number, number],
@@ -61,7 +60,8 @@ export default function HomePage() {
     riskTolerance: "any",
     involvement: "any",
     employees: "any",
-    paybackPeriod: "any"
+    paybackPeriod: "any",
+    query: ""
   });
 
   // API hooks - all must be called unconditionally at the top level
@@ -81,7 +81,8 @@ export default function HomePage() {
         riskTolerance: prefs.riskTolerance || "any",
         involvement: prefs.involvementLevel || "any",
         employees: prefs.businessSize || "any",
-        paybackPeriod: "any"
+        paybackPeriod: "any",
+        query: ""
       });
     }
   }, [userPreferencesData, isAuthenticated]);
@@ -165,9 +166,25 @@ export default function HomePage() {
     }
   ];
 
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
     console.log(`Searching for: ${query}`);
     setShowBusinesses(true);
+    // Update filters with the search query
+    setFilters(prev => ({
+      ...prev,
+      query: query
+    }));
+    // Trigger the actual web search with updated filters
+    try {
+      setShowWebResults(true);
+      await webSearchMutation.mutateAsync({
+        ...filters,
+        query: query
+      });
+    } catch (error) {
+      console.error("Web search failed:", error);
+      setShowWebResults(false);
+    }
   };
 
   const handleGetStarted = () => {
@@ -201,7 +218,8 @@ export default function HomePage() {
       riskTolerance: "any",
       involvement: "any",
       employees: "any",
-      paybackPeriod: "any"
+      paybackPeriod: "any",
+      query: ""
     });
   };
 
