@@ -64,6 +64,9 @@ export function useWebBusinessSearch() {
       const response = await apiRequest('GET', url);
       const data = await response.json();
       console.log('🔍 DEBUG: Raw API response data:', data);
+      console.log('🔍 DEBUG: CRITICAL - mutationFn return data:', data);
+      console.log('🔍 DEBUG: CRITICAL - mutationFn return data first business:', data.businesses?.[0]);
+      console.log('🔍 DEBUG: CRITICAL - mutationFn return data first business aiScore:', data.businesses?.[0]?.aiScore);
       console.log('🔍 DEBUG: API response businesses count:', data.businesses?.length);
       if (data.businesses?.length > 0) {
         console.log('🔍 DEBUG: First business from API:', data.businesses[0]);
@@ -113,7 +116,7 @@ export function useWebBusinessSearch() {
             aiScore: business.aiScore // Include aiScore in cached business data
           },
           score: {
-            score: business.aiScore || 0,
+            aiScore: business.aiScore, // FIX: Preserve correct property name from API
             reasoning: business.rankingExplanation || '',
             factors: {}
           }

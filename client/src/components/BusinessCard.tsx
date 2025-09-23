@@ -45,6 +45,7 @@ export function BusinessCard({
   console.log(`🃏 DEBUG: BusinessCard aiScore prop:`, aiScore);
   console.log(`🃏 DEBUG: BusinessCard aiScore typeof:`, typeof aiScore);
   console.log(`🃏 DEBUG: BusinessCard aiScore !== undefined:`, aiScore !== undefined);
+  
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',

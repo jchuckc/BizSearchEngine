@@ -91,6 +91,11 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
   
   console.log('📊 DEBUG: hasWebSearchResults:', hasWebSearchResults);
   console.log('📊 DEBUG: webSearchMutation.data:', webSearchMutation.data);
+  if (webSearchMutation.data?.businesses?.length > 0) {
+    console.log('📊 DEBUG: First business in webSearchMutation.data:', webSearchMutation.data.businesses[0]);
+    console.log('📊 DEBUG: First business aiScore in webSearchMutation.data:', webSearchMutation.data.businesses[0].aiScore);
+    console.log('📊 DEBUG: First business type check:', typeof webSearchMutation.data.businesses[0].aiScore);
+  }
   console.log('📊 DEBUG: webSearchMutation.isPending:', webSearchMutation.isPending);
   console.log('📊 DEBUG: webSearchMutation.isSuccess:', webSearchMutation.isSuccess);
   console.log('📊 DEBUG: webSearchMutation.error:', webSearchMutation.error);
@@ -112,8 +117,8 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
         console.log(`🏢 DEBUG: Business ${index} raw wb.industry:`, wb.industry);
         console.log(`🏢 DEBUG: Business ${index} wb object:`, wb);
         
-        const finalAiScore = wb.aiScore || 0;
-        console.log(`🏢 DEBUG: Business ${index} final aiScore assigned:`, finalAiScore);
+        // FIXED: Preserve aiScore from API response (backend returns 98 for technology businesses)
+        const finalAiScore = wb.aiScore; // Direct assignment, API confirmed working
         
         const mappedBusiness = {
           id: createStableWebId(wb),
@@ -127,7 +132,7 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
           ebitda: wb.ebitda,
           employees: wb.employees,
           yearEstablished: wb.yearEstablished,
-          aiScore: finalAiScore,
+          aiScore: finalAiScore, // Use the preserved aiScore value
           sourceUrl: wb.sourceUrl || '',
           sourceSite: wb.sourceSite || '',
           createdAt: new Date(),

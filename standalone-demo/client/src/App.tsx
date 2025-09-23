@@ -66,6 +66,9 @@ function AppContent() {
 }
 
 function App() {
+  // DETECTION MARKER - if you see this title, standalone-demo is active
+  document.title = "STANDALONE_DEMO_ACTIVE - BizSearch";
+  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
