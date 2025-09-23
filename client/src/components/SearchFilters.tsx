@@ -19,6 +19,7 @@ interface FilterState {
   involvement: string;
   employees: string;
   paybackPeriod: string;
+  query: string;
 }
 
 interface SearchFiltersProps {

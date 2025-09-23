@@ -16,8 +16,9 @@ interface WebSearchResult {
     yearEstablished: number;
     sourceUrl: string;
     sourceSite: string;
-    ranking: number;
-    rankingExplanation: string;
+    aiScore?: number;
+    ranking?: number;
+    rankingExplanation?: string;
   }>;
   totalFound: number;
   searchSummary: string;
@@ -62,7 +63,14 @@ export function useWebBusinessSearch() {
       return response.json();
     },
     onSuccess: (data) => {
-      // Cache the results for the web search query
+      // Debug logging to trace AI scores
+      console.log('WebSearch onSuccess - Total businesses:', data.businesses?.length);
+      if (data.businesses?.length > 0) {
+        console.log('First business aiScore:', data.businesses[0].aiScore, 'ranking:', data.businesses[0].ranking);
+      }
+      
+      // Invalidate stale cache and set fresh data
+      queryClient.invalidateQueries({ queryKey: ['businesses', 'web-search'] });
       queryClient.setQueryData(['businesses', 'web-search'], data);
       
       // Cache individual business details for web search results

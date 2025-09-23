@@ -18,6 +18,7 @@ interface WebSearchResult {
     sourceSite: string;
     ranking: number;
     rankingExplanation: string;
+    aiScore: number;
   }>;
   totalFound: number;
   searchSummary: string;
@@ -66,11 +67,16 @@ export function useWebBusinessSearch() {
       return response.json();
     },
     onSuccess: (data) => {
+      console.log('!!! WebSearch onSuccess CALLED - Total businesses:', data.totalFound);
+      console.log('!!! Raw API Response:', JSON.stringify(data, null, 2));
+      console.log('!!! First business aiScore:', data.businesses[0]?.aiScore);
+      
       // Cache the results for the web search query
       queryClient.setQueryData(['businesses', 'web-search'], data);
       
       // Cache individual business details for web search results
       data.businesses.forEach(business => {
+        console.log('Processing business:', business.name, 'AI Score:', business.aiScore);
         const businessId = business.sourceUrl ? 
           `web-${business.sourceUrl.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 50)}` :
           `web-${business.sourceSite}-${business.name.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 30)}`;
@@ -92,7 +98,7 @@ export function useWebBusinessSearch() {
             sourceSite: business.sourceSite
           },
           score: {
-            score: business.compatibilityScore || business.ranking || 0,
+            score: business.aiScore || business.compatibilityScore || business.ranking || 0,
             reasoning: business.rankingExplanation || '',
             factors: {}
           }

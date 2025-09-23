@@ -86,6 +86,23 @@ export default function HomePage() {
     }
   }, [userPreferencesData, isAuthenticated]);
 
+  // Auto-trigger web search when searchQuery changes (from header search)
+  useEffect(() => {
+    if (searchQuery && searchQuery.trim()) {
+      console.log('Header search triggered for:', searchQuery);
+      const searchFilters = {
+        ...filters,
+        query: searchQuery.trim()
+      };
+      handleWebSearch();
+      // Also update filters to include the search query
+      setFilters(prev => ({
+        ...prev,
+        query: searchQuery.trim()
+      }));
+    }
+  }, [searchQuery]);
+
   // Only show web search results
   const hasWebSearchResults = webSearchMutation.data?.businesses && webSearchMutation.data.businesses.length > 0;
   
@@ -99,28 +116,35 @@ export default function HomePage() {
   };
 
   const displayBusinesses = hasWebSearchResults
-    ? webSearchMutation.data!.businesses.map(wb => ({
-        id: createStableWebId(wb),
-        name: wb.name,
-        description: wb.description,
-        location: wb.location,
-        industry: wb.industry,
-        askingPrice: wb.askingPrice,
-        annualRevenue: wb.annualRevenue,
-        cashFlow: wb.cashFlow,
-        ebitda: wb.ebitda,
-        employees: wb.employees,
-        yearEstablished: wb.yearEstablished,
-        aiScore: wb.compatibilityScore || wb.ranking || 0,
-        sourceUrl: wb.sourceUrl || '',
-        sourceSite: wb.sourceSite || '',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        sellerInfo: null,
-        businessDetails: null,
-        isActive: true
-      }))
+    ? webSearchMutation.data!.businesses.map(wb => {
+        console.log('Mapping business:', wb.name, 'Raw wb.aiScore:', wb.aiScore, 'wb.compatibilityScore:', wb.compatibilityScore, 'wb.ranking:', wb.ranking);
+        const mappedBusiness = {
+          id: createStableWebId(wb),
+          name: wb.name,
+          description: wb.description,
+          location: wb.location,
+          industry: wb.industry,
+          askingPrice: wb.askingPrice,
+          annualRevenue: wb.annualRevenue,
+          cashFlow: wb.cashFlow,
+          ebitda: wb.ebitda,
+          employees: wb.employees,
+          yearEstablished: wb.yearEstablished,
+          aiScore: wb.aiScore || wb.ranking || 0,
+          sourceUrl: wb.sourceUrl || '',
+          sourceSite: wb.sourceSite || '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          sellerInfo: null,
+          businessDetails: null,
+          isActive: true
+        };
+        console.log('Final mapped aiScore:', mappedBusiness.aiScore);
+        return mappedBusiness;
+      })
     : [];
+    
+  console.log('DisplayBusinesses AI scores:', displayBusinesses.map(b => `${b.name}: ${b.aiScore}`));
   
   const isLoading = webSearchMutation.isPending;
 
@@ -350,7 +374,7 @@ export default function HomePage() {
               <div className="flex justify-center">
                 <Button
                   onClick={handleWebSearch}
-                  disabled={webSearchMutation.isPending || !isAuthenticated}
+                  disabled={webSearchMutation.isPending}
                   size="lg"
                   data-testid="button-web-search-main"
                 >

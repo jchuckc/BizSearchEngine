@@ -13,37 +13,6 @@ import { useWebBusinessSearch } from "../hooks/useWebBusinessSearch";
 import { useAuth } from "../contexts/AuthContext";
 import { type UserPreferencesInsert } from "@shared/schema";
 
-// Mock stats for fallback
-const mockStats = [
-  {
-    title: "Total Businesses",
-    value: "2,847",
-    change: "+12% from last month",
-    trend: "up" as const,
-    icon: Building2
-  },
-  {
-    title: "Avg. Asking Price", 
-    value: "$485K",
-    change: "+5% from last month",
-    trend: "up" as const,
-    icon: DollarSign
-  },
-  {
-    title: "High-Score Matches",
-    value: "184", 
-    change: "+23% from last month",
-    trend: "up" as const,
-    icon: Star
-  },
-  {
-    title: "Market Growth",
-    value: "8.2%",
-    change: "+2.1% from last month", 
-    trend: "up" as const,
-    icon: TrendingUp
-  }
-];
 
 
 interface HomePageProps {
@@ -54,7 +23,6 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
   const { isAuthenticated } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showBusinesses, setShowBusinesses] = useState(false);
-  const [showWebResults, setShowWebResults] = useState(false);
   // Initialize filters from user preferences or use defaults
   const [filters, setFilters] = useState({
     priceRange: [50000, 5000000] as [number, number],
@@ -93,20 +61,30 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
 
   // Handle global search query from header
   useEffect(() => {
+    console.log('Global search effect triggered. Query:', globalSearchQuery, 'isAuthenticated:', isAuthenticated);
     if (globalSearchQuery && globalSearchQuery.trim()) {
+      console.log('Global search conditions met, updating filters and triggering search');
       setFilters(prev => ({
         ...prev,
         query: globalSearchQuery.trim()
       }));
       // Auto-trigger search when global query is received
       setShowBusinesses(true);
-      setShowWebResults(true);
+      console.log('Triggering web search for global query:', globalSearchQuery.trim());
       webSearchMutation.mutate({
         ...filters,
         query: globalSearchQuery.trim()
       });
     }
-  }, [globalSearchQuery]);
+  }, [globalSearchQuery, isAuthenticated]);
+
+  // Auto-trigger search when showBusinesses becomes true
+  useEffect(() => {
+    if (showBusinesses && !webSearchMutation.data && !webSearchMutation.isPending && isAuthenticated) {
+      console.log('Auto-triggering search because showBusinesses is true and no data exists');
+      handleWebSearch();
+    }
+  }, [showBusinesses, isAuthenticated]);
 
   // Only show web search results
   const hasWebSearchResults = webSearchMutation.data?.businesses && webSearchMutation.data.businesses.length > 0;
@@ -121,27 +99,30 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
   };
 
   const displayBusinesses = hasWebSearchResults
-    ? webSearchMutation.data!.businesses.map(wb => ({
-        id: createStableWebId(wb),
-        name: wb.name,
-        description: wb.description,
-        location: wb.location,
-        industry: wb.industry,
-        askingPrice: wb.askingPrice,
-        annualRevenue: wb.annualRevenue,
-        cashFlow: wb.cashFlow,
-        ebitda: wb.ebitda,
-        employees: wb.employees,
-        yearEstablished: wb.yearEstablished,
-        aiScore: wb.ranking || 0,
-        sourceUrl: wb.sourceUrl || '',
-        sourceSite: wb.sourceSite || '',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        sellerInfo: null,
-        businessDetails: null,
-        isActive: true
-      }))
+    ? webSearchMutation.data!.businesses.map(wb => {
+        console.log('Processing business:', wb.name, 'AI Score:', wb.aiScore, 'Ranking:', wb.ranking);
+        return {
+          id: createStableWebId(wb),
+          name: wb.name,
+          description: wb.description,
+          location: wb.location,
+          industry: wb.industry,
+          askingPrice: wb.askingPrice,
+          annualRevenue: wb.annualRevenue,
+          cashFlow: wb.cashFlow,
+          ebitda: wb.ebitda,
+          employees: wb.employees,
+          yearEstablished: wb.yearEstablished,
+          aiScore: wb.aiScore || 0,
+          sourceUrl: wb.sourceUrl || '',
+          sourceSite: wb.sourceSite || '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          sellerInfo: null,
+          businessDetails: null,
+          isActive: true
+        };
+      })
     : [];
   
   const isLoading = webSearchMutation.isPending;
@@ -197,14 +178,13 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
     }));
     // Trigger the actual web search with updated filters
     try {
-      setShowWebResults(true);
+      console.log('Triggering web search for manual query:', query);
       await webSearchMutation.mutateAsync({
         ...filters,
         query: query
       });
     } catch (error) {
       console.error("Web search failed:", error);
-      setShowWebResults(false);
     }
   };
 
@@ -246,11 +226,10 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
 
   const handleWebSearch = async () => {
     try {
-      setShowWebResults(true);
+      console.log('Triggering Live Search with filters:', filters);
       await webSearchMutation.mutateAsync(filters);
     } catch (error) {
       console.error("Web search failed:", error);
-      setShowWebResults(false);
     }
   };
 
@@ -389,7 +368,7 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
               <div className="flex justify-center">
                 <Button
                   onClick={handleWebSearch}
-                  disabled={webSearchMutation.isPending || !isAuthenticated}
+                  disabled={webSearchMutation.isPending}
                   size="lg"
                   data-testid="button-web-search-main"
                 >
