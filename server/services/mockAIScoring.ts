@@ -8,41 +8,48 @@ export function generateMockCompatibilityScore(
   compatibilityScore: number; 
   rankingExplanation: string; 
 } {
-  let score = 65; // Base score
+  let score = 50; // Lower base score for more differentiation
   const factors: string[] = [];
+  let industryMatch = false;
   
-  // Industry match (up to +20 points)
+  // Industry match (major factor - up to +25 points)
   if (userPreferences.preferredIndustries.includes(business.industry)) {
-    score += 15;
+    score += 25;
+    industryMatch = true;
     factors.push(`Strong industry match (${business.industry})`);
   } else {
-    score += 5;
+    score += 8; // Reduced bonus for non-preferred industries
     factors.push(`Industry alignment potential`);
   }
   
-  // Location match (up to +15 points)
+  // Location match (up to +15 points, reduced for non-industry matches)
   const businessState = business.location.split(', ')[1];
   const hasLocationMatch = userPreferences.preferredLocations.some(loc => 
     loc.includes(businessState) || business.location === loc
   );
   if (hasLocationMatch) {
-    score += 12;
+    const locationBonus = industryMatch ? 15 : 8; // Less bonus if industry doesn't match
+    score += locationBonus;
     factors.push(`Preferred location (${business.location})`);
   } else {
-    score += 3;
+    const locationPenalty = industryMatch ? 3 : 1; // Minimal bonus if neither industry nor location match
+    score += locationPenalty;
     factors.push(`Market expansion opportunity`);
   }
   
-  // Budget alignment (up to +15 points)
+  // Budget alignment (up to +15 points, reduced for non-industry matches)
   const { min, max } = userPreferences.budgetRange;
   if (business.askingPrice >= min && business.askingPrice <= max) {
-    score += 12;
+    const budgetBonus = industryMatch ? 15 : 8; // Reduced if industry doesn't match
+    score += budgetBonus;
     factors.push(`Within your budget range ($${(min/1000).toFixed(0)}K-$${(max/1000).toFixed(0)}K)`);
   } else if (business.askingPrice < min) {
-    score += 8;
+    const belowBudgetBonus = industryMatch ? 10 : 5;
+    score += belowBudgetBonus;
     factors.push(`Below budget - potential value opportunity`);
   } else {
-    score += 3;
+    const aboveBudgetBonus = industryMatch ? 5 : 2;
+    score += aboveBudgetBonus;
     factors.push(`Above budget but strong fundamentals`);
   }
   
@@ -57,10 +64,12 @@ export function generateMockCompatibilityScore(
   }
   
   if (sizeMatch) {
-    score += 8;
+    const sizeBonus = industryMatch ? 10 : 5; // Reduced bonus for non-preferred industries
+    score += sizeBonus;
     factors.push(`${userPreferences.businessSize} business size preference match`);
   } else {
-    score += 4;
+    const sizePenalty = industryMatch ? 4 : 2;
+    score += sizePenalty;
     factors.push(`Business size offers learning opportunities`);
   }
   
@@ -69,13 +78,16 @@ export function generateMockCompatibilityScore(
   const cashFlowMargin = business.cashFlow / business.annualRevenue;
   
   if (revenueMultiple < 1.5 && cashFlowMargin > 0.2) {
-    score += 8;
+    const financialBonus = industryMatch ? 10 : 5;
+    score += financialBonus;
     factors.push(`Strong financial metrics and valuation`);
   } else if (revenueMultiple < 2.0 && cashFlowMargin > 0.15) {
-    score += 6;
+    const financialBonus = industryMatch ? 7 : 4;
+    score += financialBonus;
     factors.push(`Good financial health indicators`);
   } else {
-    score += 3;
+    const financialBonus = industryMatch ? 4 : 2;
+    score += financialBonus;
     factors.push(`Adequate financial foundation`);
   }
   
