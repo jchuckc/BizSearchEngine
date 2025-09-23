@@ -147,7 +147,7 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
         const forceAiScore = wb.industry === 'Technology' ? 98 : (wb.aiScore || wb.ranking || 0);
         
         const mappedBusiness = {
-          id: createStableWebId(wb),
+          id: wb.id, // Use original business ID instead of creating web-prefixed one
           name: wb.name,
           description: wb.description,
           location: wb.location,

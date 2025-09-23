@@ -84,8 +84,8 @@ export function BusinessDetailsModal({
                   AI Compatibility Score
                   <div className="flex items-center gap-1 ml-auto">
                     <Star className="h-4 w-4 fill-primary text-primary" />
-                    <span className={`font-bold text-lg ${getScoreColor(score.score)}`} data-testid={`text-modal-score-${business.id}`}>
-                      {score.score}/100
+                    <span className={`font-bold text-lg ${getScoreColor(score.score)}`} data-testid={`modal-score-simple`}>
+                      {score?.score || 'MISSING'}/100
                     </span>
                   </div>
                 </CardTitle>

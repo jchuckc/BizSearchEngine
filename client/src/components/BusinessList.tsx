@@ -36,7 +36,7 @@ export function BusinessList({
   // Fetch detailed business data when modal is opened
   const { data: businessDetails, isLoading: businessDetailsLoading } = useBusiness(selectedBusinessId || "");
   
-  // Debug logging
+  // Debug: What data is useBusiness returning?
   if (selectedBusinessId && businessDetails) {
     console.log('BusinessList: selectedBusinessId =', selectedBusinessId);
     console.log('BusinessList: businessDetails =', { 

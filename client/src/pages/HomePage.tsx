@@ -100,14 +100,6 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
   console.log('📊 DEBUG: webSearchMutation.isSuccess:', webSearchMutation.isSuccess);
   console.log('📊 DEBUG: webSearchMutation.error:', webSearchMutation.error);
   
-  // Helper function to create stable IDs for web search results
-  const createStableWebId = (business: any): string => {
-    if (business.sourceUrl) {
-      // Use a simple hash of the source URL for consistent ID
-      return `web-${business.sourceUrl.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 50)}`;
-    }
-    return `web-${business.sourceSite}-${business.name.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 30)}`;
-  };
 
   const displayBusinesses = hasWebSearchResults
     ? webSearchMutation.data!.businesses.map((wb, index) => {

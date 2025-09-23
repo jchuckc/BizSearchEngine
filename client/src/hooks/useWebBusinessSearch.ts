@@ -4,6 +4,7 @@ import { useToast } from './use-toast';
 
 interface WebSearchResult {
   businesses: Array<{
+    id: string;  // Added missing id property
     name: string;
     description: string;
     location: string;
