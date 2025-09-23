@@ -32,7 +32,7 @@ interface WebSearchResponse {
   source: string;
 }
 
-export function useWebBusinessSearch() {
+export function useWebBusinessSearch(onSuccessCallback?: (data: WebSearchResponse) => void) {
   const { toast } = useToast();
 
   return useMutation<WebSearchResponse, Error, any>({
@@ -71,6 +71,11 @@ export function useWebBusinessSearch() {
       console.log('!!! Raw API Response:', JSON.stringify(data, null, 2));
       console.log('!!! First business aiScore:', data.businesses[0]?.aiScore);
       
+      // Call the callback to update component state
+      if (onSuccessCallback) {
+        onSuccessCallback(data);
+      }
+      
       // Cache the results for the web search query
       queryClient.setQueryData(['businesses', 'web-search'], data);
       
@@ -98,7 +103,7 @@ export function useWebBusinessSearch() {
             sourceSite: business.sourceSite
           },
           score: {
-            score: business.aiScore || business.compatibilityScore || business.ranking || 0,
+            score: business.aiScore || business.ranking || 0,
             reasoning: business.rankingExplanation || '',
             factors: {}
           }

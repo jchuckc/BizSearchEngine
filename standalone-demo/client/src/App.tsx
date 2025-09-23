@@ -11,10 +11,12 @@ import NotFound from "@/pages/not-found";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
-function Router() {
+function Router({ globalSearchQuery }: { globalSearchQuery: string }) {
   return (
     <Switch>
-      <Route path="/" component={HomePage} />
+      <Route path="/">
+        <HomePage globalSearchQuery={globalSearchQuery} />
+      </Route>
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
@@ -23,11 +25,13 @@ function Router() {
 
 function AppContent() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const { isAuthenticated, logout } = useAuth();
 
   const handleSearch = (query: string) => {
     console.log(`Global search: ${query}`);
-    // TODO: Implement global search functionality
+    // Pass search query to HomePage via prop
+    setGlobalSearchQuery(query);
   };
 
   const handleShowProfile = () => {
@@ -51,7 +55,7 @@ function AppContent() {
         isAuthenticated={isAuthenticated}
       />
       <main className="flex-1">
-        <Router />
+        <Router globalSearchQuery={globalSearchQuery} />
       </main>
     </div>
   );
