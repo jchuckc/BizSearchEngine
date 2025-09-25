@@ -152,7 +152,7 @@ export function BusinessList({
         </div>
       )}
 
-      {/* Modal functionality removed per user request */
+      {/* Modal functionality removed per user request */}
     </div>
   );
 }
