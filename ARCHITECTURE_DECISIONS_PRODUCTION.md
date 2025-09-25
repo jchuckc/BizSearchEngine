@@ -2,7 +2,7 @@
 
 ## Overview
 
-BizSearch is a production-grade AI-powered business acquisition platform designed to help entrepreneurs and investors discover, evaluate, and rank business opportunities. This document outlines the key architectural decisions made for the production system, their rationale, tradeoffs, and evolution criteria.
+BizSearch is a production-grade AI-powered business acquisition platform designed to help entrepreneurs and investors discover, evaluate, and rank business opportunities. This document outlines the key architectural decisions made for the production system, their rationale, tradeoffs, and evolution criteria. This production-ready version of the application has not been deployed and only reflects the choices and is devoid of a public-facing implementation.
 
 ## Guiding Principles
 
