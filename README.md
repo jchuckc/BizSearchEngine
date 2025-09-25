@@ -158,7 +158,7 @@ Integration Expansion - Additional business listing sources
 This project is for portfolio demonstration purposes. All business data is simulated for demo purposes.
 
 🔗 Links
-Live Demo: [Your Replit URL]
+Live Demo: [https://biz-search-engine-jnwachukwu.replit.app/]
 Development Environment: Replit
 Database: Neon PostgreSQL
 AI Provider: OpenAI GPT-4
