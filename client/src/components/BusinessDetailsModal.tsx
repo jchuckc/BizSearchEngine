@@ -36,34 +36,47 @@ export function BusinessDetailsModal({
   isLoading = false 
 }: BusinessDetailsModalProps) {
   
-  // Generate fallback factors based on business.aiScore when score.factors doesn't exist
-  const generateFallbackFactors = (aiScore: number) => ({
-    industryFit: Math.min(95, aiScore + Math.floor(Math.random() * 10) - 5),
-    priceMatch: Math.min(95, aiScore + Math.floor(Math.random() * 10) - 5),
-    locationScore: Math.min(90, 60 + Math.floor(Math.random() * 30)),
-    riskAlignment: Math.min(95, aiScore + Math.floor(Math.random() * 10) - 5),
-    involvementFit: Math.min(95, aiScore + Math.floor(Math.random() * 10) - 5)
-  });
+  // Generate deterministic fallback factors based on business.aiScore
+  const generateFallbackFactors = (aiScore: number, businessId: string) => {
+    // Use business ID hash for consistent but varied factors across businesses
+    const hash = businessId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const seed = hash % 10;
+    
+    return {
+      industryFit: Math.min(95, aiScore + (seed % 8) - 4),
+      priceMatch: Math.min(95, aiScore + ((seed + 3) % 8) - 4),
+      locationScore: Math.min(90, 60 + ((seed + 7) % 25)),
+      riskAlignment: Math.min(95, aiScore + ((seed + 1) % 8) - 4),
+      involvementFit: Math.min(95, aiScore + ((seed + 5) % 8) - 4)
+    };
+  };
 
-  // Get factors from score or generate fallback based on business.aiScore
+  // Get factors from score or generate deterministic fallback based on AI score
   const getFactors = () => {
     if (score?.factors) {
       return score.factors;
     }
-    if (business?.aiScore !== undefined) {
-      return generateFallbackFactors(business.aiScore);
+    // Use business.aiScore (from web cache) OR score.score (from API)
+    const aiScore = business?.aiScore ?? score?.score;
+    if (aiScore !== undefined && business?.id) {
+      return generateFallbackFactors(aiScore, business.id);
     }
     return null;
   };
   
   const factors = getFactors();
 
-  // DEBUG: Log what the modal actually receives
+  // TEMP: Debug what modal actually gets
   if (isOpen && business) {
-    console.log('🎭 Modal Props - Business name:', business.name);
-    console.log('🎭 Modal Props - Business aiScore:', business.aiScore);
-    console.log('🎭 Modal Props - Score object:', score);
-    console.log('🎭 Modal Props - Generated factors:', factors);
+    const aiScore = business?.aiScore ?? score?.score;
+    console.log('MODAL DEBUG:', {
+      businessName: business.name,
+      businessAiScore: business.aiScore,
+      scoreObject: score,
+      scoreScore: score?.score,
+      finalAiScore: aiScore,
+      factors: factors
+    });
   }
 
   const formatCurrency = (amount: number) => {
@@ -113,7 +126,6 @@ export function BusinessDetailsModal({
                 <CardTitle className="flex items-center gap-2">
                   <Brain className="h-5 w-5 text-primary" />
                   AI Compatibility Score
-                  <span className="text-xs bg-red-500 text-white px-1 rounded">DEBUG: Modal Updated</span>
                   <div className="flex items-center gap-1 ml-auto">
                     <Star className="h-4 w-4 fill-primary text-primary" />
                     <span className={`font-bold text-lg ${getScoreColor(business?.aiScore ?? score?.score ?? 0)}`} data-testid={`modal-score-simple`}>
@@ -132,7 +144,7 @@ export function BusinessDetailsModal({
                   </div>
                 )}
                 
-                {(score?.factors || business?.aiScore !== undefined) && (
+                {(score?.factors || business?.aiScore !== undefined || score?.score !== undefined) && (
                   <div className="space-y-3">
                     <h4 className="font-semibold text-sm">Compatibility Factors:</h4>
                     <div className="grid grid-cols-2 gap-3">
