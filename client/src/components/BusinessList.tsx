@@ -1,4 +1,5 @@
 import { BusinessCard } from "./BusinessCard";
+import { BusinessDetailsModal } from "./BusinessDetailsModal";
 import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { ArrowUpDown, RefreshCw } from "lucide-react";
@@ -8,6 +9,7 @@ import { type Business } from "@shared/schema";
 interface BusinessListProps {
   businesses: Business[];
   loading?: boolean;
+  onViewDetails: (id: string) => void;
   onContact: (id: string) => void;
   onLoadMore?: () => void;
   hasMore?: boolean;
@@ -19,7 +21,7 @@ type SortOption = "askingPrice" | "annualRevenue" | "cashFlow" | "yearEstablishe
 export function BusinessList({ 
   businesses, 
   loading = false, 
- 
+  onViewDetails,
   onContact, 
   onLoadMore,
   hasMore = false,
@@ -27,8 +29,22 @@ export function BusinessList({
 }: BusinessListProps) {
   const [sortBy, setSortBy] = useState<SortOption>("askingPrice");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Modal functionality removed
+  const handleViewDetails = (id: string) => {
+    const business = businesses.find(b => b.id === id);
+    if (business) {
+      setSelectedBusiness(business);
+      setIsModalOpen(true);
+      onViewDetails(id);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedBusiness(null);
+  };
 
 
 
@@ -134,6 +150,7 @@ export function BusinessList({
           <BusinessCard
             key={business.id}
             {...business}
+            onViewDetails={handleViewDetails}
             onContact={onContact}
           />
         ))}
@@ -152,7 +169,13 @@ export function BusinessList({
         </div>
       )}
 
-      {/* Modal functionality removed per user request */}
+      {/* Business Details Modal */}
+      <BusinessDetailsModal
+        business={selectedBusiness}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onContact={onContact}
+      />
     </div>
   );
 }
