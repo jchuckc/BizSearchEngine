@@ -35,6 +35,15 @@ export function BusinessDetailsModal({
   onContact,
   isLoading = false 
 }: BusinessDetailsModalProps) {
+  
+  // DEBUG: Log exactly what props the modal receives
+  if (isOpen && business) {
+    console.log('🎭 Modal DEBUG - Business:', business.name);
+    console.log('🎭 Modal DEBUG - Business ID:', business.id);
+    console.log('🎭 Modal DEBUG - Score object:', score);
+    console.log('🎭 Modal DEBUG - Score.score value:', score?.score);
+    console.log('🎭 Modal DEBUG - aiScore from business:', business.aiScore);
+  }
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -84,8 +93,8 @@ export function BusinessDetailsModal({
                   AI Compatibility Score
                   <div className="flex items-center gap-1 ml-auto">
                     <Star className="h-4 w-4 fill-primary text-primary" />
-                    <span className={`font-bold text-lg ${getScoreColor(score.score)}`} data-testid={`modal-score-simple`}>
-                      {score?.score || 'MISSING'}/100
+                    <span className={`font-bold text-lg ${getScoreColor(score?.score || business?.aiScore || 0)}`} data-testid={`modal-score-simple`}>
+                      {score?.score || business?.aiScore || 'MISSING'}/100
                     </span>
                   </div>
                 </CardTitle>
