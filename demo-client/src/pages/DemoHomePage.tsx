@@ -202,6 +202,10 @@ export default function DemoHomePage() {
             <BusinessList
               businesses={displayBusinesses}
               loading={isLoading}
+              onViewDetails={(id) => {
+                // View details functionality for demo mode
+                console.log('Viewing details for business:', id);
+              }}
               onContact={(id) => {
                 toast({
                   title: "Demo Contact",
