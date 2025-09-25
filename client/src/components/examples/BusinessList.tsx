@@ -65,7 +65,6 @@ export default function BusinessListExample() {
     <div className="p-6 max-w-7xl mx-auto">
       <BusinessList
         businesses={mockBusinesses}
-        onViewDetails={(id) => console.log(`View details for business ${id}`)}
         onContact={(id) => console.log(`Contact seller for business ${id}`)}
         onLoadMore={() => console.log("Load more businesses")}
         hasMore={true}

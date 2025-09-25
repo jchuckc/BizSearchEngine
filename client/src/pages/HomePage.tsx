@@ -429,7 +429,6 @@ export default function HomePage({ globalSearchQuery }: HomePageProps) {
               <BusinessList
                 businesses={displayBusinesses}
                 loading={isLoading}
-                onViewDetails={(id) => console.log(`View details: ${id}`)}
                 onContact={(id) => console.log(`Contact seller: ${id}`)}
                 hasMore={displayBusinesses.length >= 20}
                 onLoadMore={() => console.log("Load more")}

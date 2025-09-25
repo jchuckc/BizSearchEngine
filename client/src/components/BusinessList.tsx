@@ -1,16 +1,13 @@
 import { BusinessCard } from "./BusinessCard";
-import { BusinessDetailsModal } from "./BusinessDetailsModal";
 import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { ArrowUpDown, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { type Business } from "@shared/schema";
-import { useBusiness } from "../hooks/useBusinesses";
 
 interface BusinessListProps {
   businesses: Business[];
   loading?: boolean;
-  onViewDetails: (id: string) => void;
   onContact: (id: string) => void;
   onLoadMore?: () => void;
   hasMore?: boolean;
@@ -22,7 +19,7 @@ type SortOption = "askingPrice" | "annualRevenue" | "cashFlow" | "yearEstablishe
 export function BusinessList({ 
   businesses, 
   loading = false, 
-  onViewDetails, 
+ 
   onContact, 
   onLoadMore,
   hasMore = false,
@@ -30,33 +27,10 @@ export function BusinessList({
 }: BusinessListProps) {
   const [sortBy, setSortBy] = useState<SortOption>("askingPrice");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch detailed business data when modal is opened
-  const { data: businessDetails, isLoading: businessDetailsLoading } = useBusiness(selectedBusinessId || "");
-  
-  // Debug: What data is useBusiness returning?
-  if (selectedBusinessId && businessDetails) {
-    console.log('BusinessList: selectedBusinessId =', selectedBusinessId);
-    console.log('BusinessList: businessDetails =', { 
-      business: businessDetails.business?.id,
-      hasScore: !!businessDetails.score,
-      score: businessDetails.score 
-    });
-  }
+  // Modal functionality removed
 
-  const handleViewDetails = (businessId: string) => {
-    setSelectedBusinessId(businessId);
-    setIsModalOpen(true);
-    // Also call the original onViewDetails if needed
-    onViewDetails(businessId);
-  };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedBusinessId(null);
-  };
 
   const sortedBusinesses = [...businesses].sort((a, b) => {
     const aValue = a[sortBy];
@@ -160,7 +134,6 @@ export function BusinessList({
           <BusinessCard
             key={business.id}
             {...business}
-            onViewDetails={handleViewDetails}
             onContact={onContact}
           />
         ))}
@@ -179,17 +152,7 @@ export function BusinessList({
         </div>
       )}
 
-      {/* Business Details Modal */}
-      {selectedBusinessId && (
-        <BusinessDetailsModal
-          business={businessDetails?.business}
-          score={businessDetails?.score}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onContact={onContact}
-          isLoading={businessDetailsLoading}
-        />
-      )}
+      {/* Modal functionality removed per user request */
     </div>
   );
 }
