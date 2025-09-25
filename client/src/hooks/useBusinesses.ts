@@ -112,13 +112,7 @@ export function useBusiness(id: string) {
         throw new Error('Failed to fetch business');
       }
       const data = await response.json();
-      console.log('🔍 API RESPONSE:', { 
-        businessId: data.business?.id, 
-        businessAiScore: data.business?.aiScore,
-        hasScore: !!data.score, 
-        scoreScore: data.score?.score,
-        scoreObject: data.score 
-      });
+      console.log('useBusiness: received data', { businessId: data.business?.id, hasScore: !!data.score, score: data.score });
       return data;
     },
     enabled: !!id, // Allow queries for all business IDs

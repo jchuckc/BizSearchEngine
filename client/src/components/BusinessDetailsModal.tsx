@@ -66,18 +66,6 @@ export function BusinessDetailsModal({
   
   const factors = getFactors();
 
-  // TEMP: Debug what modal actually gets
-  if (isOpen && business) {
-    const aiScore = business?.aiScore ?? score?.score;
-    console.log('MODAL DEBUG:', {
-      businessName: business.name,
-      businessAiScore: business.aiScore,
-      scoreObject: score,
-      scoreScore: score?.score,
-      finalAiScore: aiScore,
-      factors: factors
-    });
-  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

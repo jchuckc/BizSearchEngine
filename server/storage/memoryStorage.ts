@@ -34,7 +34,15 @@ export class DemoMemoryStorage {
   }
 
   async getBusinessById(id: string): Promise<Business | null> {
-    return this.businesses.find(b => b.id === id) || null;
+    const business = this.businesses.find(b => b.id === id);
+    if (!business) return null;
+    
+    // Add aiScore to business for consistency with search results
+    const score = this.businessScores.get(business.id);
+    return {
+      ...business,
+      aiScore: score?.score || undefined
+    };
   }
 
   async searchBusinesses(filters: any = {}): Promise<{ businesses: Business[]; totalFound: number }> {
