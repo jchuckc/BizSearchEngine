@@ -2,7 +2,7 @@
 
 ## Overview
 
-BizSearch is an AI-powered business acquisition platform designed to help entrepreneurs and investors discover, evaluate, and rank business opportunities. This document outlines the key architectural decisions, their rationale, and tradeoffs in building a demo application that showcases full-stack capabilities while maintaining zero operational costs.
+BizSearch is an AI-powered business acquisition platform designed to help entrepreneurs and investors discover, evaluate, and rank business opportunities. This document outlines the key architectural decisions, their rationale, and tradeoffs in building a demo application that showcases full-stack capabilities while maintaining zero operational costs. This is a scaled-down version of the application and is, in essence, a high-fidelity prototype. The full concept and architectural decisions for the production scale implementation are captured in the Architecture_Decisions_Production document
 
 ## Guiding Principles
 
