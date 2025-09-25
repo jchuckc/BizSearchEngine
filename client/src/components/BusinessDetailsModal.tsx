@@ -77,7 +77,7 @@ export function BusinessDetailsModal({
           <div className="space-y-6">
           
           {/* AI Score Section */}
-          {(score || business?.aiScore) && (
+          {(score ?? business?.aiScore ?? null) !== null && (
             <Card className="border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -85,8 +85,8 @@ export function BusinessDetailsModal({
                   AI Compatibility Score
                   <div className="flex items-center gap-1 ml-auto">
                     <Star className="h-4 w-4 fill-primary text-primary" />
-                    <span className={`font-bold text-lg ${getScoreColor(business?.aiScore || score?.score || 0)}`} data-testid={`modal-score-simple`}>
-                      {business?.aiScore || score?.score || 'MISSING'}/100
+                    <span className={`font-bold text-lg ${getScoreColor(business?.aiScore ?? score?.score ?? 0)}`} data-testid={`modal-score-simple`}>
+                      {business?.aiScore ?? score?.score ?? 'MISSING'}/100
                     </span>
                   </div>
                 </CardTitle>
