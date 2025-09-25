@@ -18,6 +18,7 @@ interface BusinessCardProps {
   sourceUrl: string;
   sourceSite: string;
   aiScore?: number;
+  onViewDetails: (id: string) => void;
   onContact: (id: string) => void;
 }
 
@@ -36,6 +37,7 @@ export function BusinessCard({
   sourceUrl,
   sourceSite,
   aiScore,
+  onViewDetails,
   onContact
 }: BusinessCardProps) {
   
@@ -151,7 +153,7 @@ export function BusinessCard({
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => {/* Modal functionality removed */}}
+              onClick={() => onViewDetails(id)}
               data-testid={`button-view-details-${id}`}
               className="flex-1"
             >
