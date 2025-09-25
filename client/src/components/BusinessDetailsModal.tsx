@@ -36,14 +36,6 @@ export function BusinessDetailsModal({
   isLoading = false 
 }: BusinessDetailsModalProps) {
   
-  // DEBUG: Log exactly what props the modal receives
-  if (isOpen && business) {
-    console.log('🎭 Modal DEBUG - Business:', business.name);
-    console.log('🎭 Modal DEBUG - Business ID:', business.id);
-    console.log('🎭 Modal DEBUG - Score object:', score);
-    console.log('🎭 Modal DEBUG - Score.score value:', score?.score);
-    console.log('🎭 Modal DEBUG - aiScore from business:', business.aiScore);
-  }
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -85,7 +77,7 @@ export function BusinessDetailsModal({
           <div className="space-y-6">
           
           {/* AI Score Section */}
-          {score && (
+          {(score || business?.aiScore) && (
             <Card className="border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -93,14 +85,14 @@ export function BusinessDetailsModal({
                   AI Compatibility Score
                   <div className="flex items-center gap-1 ml-auto">
                     <Star className="h-4 w-4 fill-primary text-primary" />
-                    <span className={`font-bold text-lg ${getScoreColor(score?.score || business?.aiScore || 0)}`} data-testid={`modal-score-simple`}>
-                      {score?.score || business?.aiScore || 'MISSING'}/100
+                    <span className={`font-bold text-lg ${getScoreColor(business?.aiScore || score?.score || 0)}`} data-testid={`modal-score-simple`}>
+                      {business?.aiScore || score?.score || 'MISSING'}/100
                     </span>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {score.reasoning && (
+                {score?.reasoning && (
                   <div className="space-y-2">
                     <h4 className="font-semibold text-sm">AI Analysis:</h4>
                     <p className="text-sm text-muted-foreground leading-relaxed" data-testid={`text-ai-reasoning-${business.id}`}>
@@ -109,62 +101,62 @@ export function BusinessDetailsModal({
                   </div>
                 )}
                 
-                {score.factors && (
+                {score?.factors && (
                   <div className="space-y-3">
                     <h4 className="font-semibold text-sm">Compatibility Factors:</h4>
                     <div className="grid grid-cols-2 gap-3">
-                      {score.factors.priceMatch !== undefined && (
+                      {score?.factors?.priceMatch !== undefined && (
                         <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
                           <div className="flex items-center gap-2">
                             <Target className="h-4 w-4" />
                             <span className="text-sm">Price Match</span>
                           </div>
                           <span className="font-medium" data-testid={`score-price-match-${business.id}`}>
-                            {score.factors.priceMatch}/100
+                            {score?.factors?.priceMatch}/100
                           </span>
                         </div>
                       )}
-                      {score.factors.industryFit !== undefined && (
+                      {score?.factors?.industryFit !== undefined && (
                         <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
                           <div className="flex items-center gap-2">
                             <Building2 className="h-4 w-4" />
                             <span className="text-sm">Industry Fit</span>
                           </div>
                           <span className="font-medium" data-testid={`score-industry-fit-${business.id}`}>
-                            {score.factors.industryFit}/100
+                            {score?.factors?.industryFit}/100
                           </span>
                         </div>
                       )}
-                      {score.factors.riskAlignment !== undefined && (
+                      {score?.factors?.riskAlignment !== undefined && (
                         <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
                           <div className="flex items-center gap-2">
                             <Shield className="h-4 w-4" />
                             <span className="text-sm">Risk Alignment</span>
                           </div>
                           <span className="font-medium" data-testid={`score-risk-alignment-${business.id}`}>
-                            {score.factors.riskAlignment}/100
+                            {score?.factors?.riskAlignment}/100
                           </span>
                         </div>
                       )}
-                      {score.factors.involvementFit !== undefined && (
+                      {score?.factors?.involvementFit !== undefined && (
                         <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
                             <span className="text-sm">Involvement Fit</span>
                           </div>
                           <span className="font-medium" data-testid={`score-involvement-fit-${business.id}`}>
-                            {score.factors.involvementFit}/100
+                            {score?.factors?.involvementFit}/100
                           </span>
                         </div>
                       )}
-                      {score.factors.locationScore !== undefined && (
+                      {score?.factors?.locationScore !== undefined && (
                         <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4" />
                             <span className="text-sm">Location Score</span>
                           </div>
                           <span className="font-medium" data-testid={`score-location-${business.id}`}>
-                            {score.factors.locationScore}/100
+                            {score?.factors?.locationScore}/100
                           </span>
                         </div>
                       )}

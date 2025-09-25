@@ -41,8 +41,6 @@ export function BusinessCard({
   onContact
 }: BusinessCardProps) {
   
-  // DEBUG: Log exactly what ID is passed to the BusinessCard
-  console.log(`🎴 BusinessCard DEBUG - Received ID: "${id}" for business: ${name}`);
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

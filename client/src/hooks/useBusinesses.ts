@@ -104,10 +104,6 @@ export function useBusiness(id: string) {
       const cachedData = queryClient.getQueryData(['businesses', id]);
       if (cachedData) {
         console.log('🔍 useBusiness: Found cached data for business', id);
-        console.log('🔍 useBusiness: Cached data structure:', cachedData);
-        console.log('🔍 useBusiness: Cached data has score?', !!(cachedData as any)?.score);
-        console.log('🔍 useBusiness: Cached score object:', (cachedData as any)?.score);
-        console.log('🔍 useBusiness: Cached score.score value:', (cachedData as any)?.score?.score);
         return cachedData as { business: Business; score?: BusinessScore };
       }
       
